@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://nitsrg2001:google987@cluster0.gnaxv.mongodb.net/education_dbDB_PASSWORD=google987
+      database: education_db
+      auto-index-creation: true
+      ssl:
+        enabled: false
+      #username:
+      #password
