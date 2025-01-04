@@ -1,7 +1,7 @@
 spring:
   data:
     mongodb:
-      uri: mongodb+srv://nitsrg2001:google987@cluster0.gnaxv.mongodb.net/education_dbDB_PASSWORD=google987
+      uri: ${MONGODB_URI}
       database: education_db
       auto-index-creation: true
       ssl:

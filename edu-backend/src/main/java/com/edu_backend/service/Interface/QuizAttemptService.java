@@ -2,8 +2,6 @@ package com.edu_backend.service.Interface;
 
 import java.util.List;
 
-public interface ResultService {
-
+public interface QuizAttemptService {
     List<?> getAllResultsOfUser();
-
 }
