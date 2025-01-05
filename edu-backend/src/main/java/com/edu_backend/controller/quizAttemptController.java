@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/quizAttempts")
+@RequestMapping("/quizAttempt")
 public class quizAttemptController {
 
         @Autowired
@@ -42,16 +42,9 @@ public class quizAttemptController {
         // get all attempt of any quizSet by quizSetId and UserID
         @GetMapping("/userId/{userId}/quizSetId/{quizSetId}")
         public ResponseEntity<?> getResultsByUserIdAndQuizSetId(@PathVariable String userId, @PathVariable String quizSetId) {
-            Optional<QuizAttempt> results = quizAttemptService.getResultsByUserIdAndQuizSetId(userId, quizSetId);
+            Optional<QuizAttempt.QuizSet> results = quizAttemptService.getResultsByUserIdAndQuizSetId(userId, quizSetId);
 
             if (results.isPresent()) {
-                QuizAttempt result = results.get();
-                // Filter quizSets by quizSetId
-                result.setQuizSet(
-                        result.getQuizSet().stream()
-                                .filter(quizSet -> quizSet.getQuizSetId().equals(quizSetId))
-                                .collect(Collectors.toList())
-                );
                 return ResponseEntity.ok(results);
             } else {
                 return ResponseEntity.notFound().build();

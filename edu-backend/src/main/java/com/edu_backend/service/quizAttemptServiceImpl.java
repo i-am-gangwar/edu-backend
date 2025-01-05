@@ -1,5 +1,6 @@
 package com.edu_backend.service;
 
+import com.edu_backend.model.QuizAttempt;
 import com.edu_backend.repository.QuizAttemptRepository;
 import com.edu_backend.service.Interface.QuizAttemptService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,12 +24,12 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
         return quizAttemptRepository.findAll();
     }
 
-    public com.edu_backend.model.QuizAttempt addQuizAttempt(String userId, String quizSetId, com.edu_backend.model.QuizAttempt.QuizSetAttempt newAttempt){
+    public QuizAttempt addQuizAttempt(String userId, String quizSetId, QuizAttempt.QuizSetAttempt newAttempt){
         Optional<com.edu_backend.model.QuizAttempt> optionalResults  = quizAttemptRepository.findByUserId(userId);
         System.out.println("user:" + optionalResults);
         newAttempt.setDate(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
         System.out.println("set date:" +newAttempt.getDate());
-        com.edu_backend.model.QuizAttempt quizAttempt;
+        QuizAttempt quizAttempt;
         if (optionalResults .isPresent()) {
             quizAttempt = optionalResults.get();
             Optional<com.edu_backend.model.QuizAttempt.QuizSet> optionalQuizSet = quizAttempt.getQuizSet().stream()
@@ -37,12 +38,12 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
 
             if (optionalQuizSet.isPresent()) {
                 // Add to existing QuizSet
-                com.edu_backend.model.QuizAttempt.QuizSet quizSet = optionalQuizSet.get();
+                QuizAttempt.QuizSet quizSet = optionalQuizSet.get();
                 quizSet.getQuizSetAttempts().add(newAttempt);
 
             } else {
                 // Create new QuizSet with the new attempt
-                com.edu_backend.model.QuizAttempt.QuizSet newQuizSet = new com.edu_backend.model.QuizAttempt.QuizSet(quizSetId);
+                QuizAttempt.QuizSet newQuizSet = new QuizAttempt.QuizSet(quizSetId);
                 newQuizSet.setQuizSetId(quizSetId);
                 newQuizSet.setQuizSetAttempts(new ArrayList<>(List.of(newAttempt)));
                 quizAttempt.getQuizSet().add(newQuizSet);
@@ -52,9 +53,9 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
         }
         else{
             // Create new QuizSetAttempt document with the new QuizSet and attempt
-            quizAttempt = new com.edu_backend.model.QuizAttempt();
+            quizAttempt = new QuizAttempt();
             quizAttempt.setUserId(userId);
-            com.edu_backend.model.QuizAttempt.QuizSet newQuizSet = new com.edu_backend.model.QuizAttempt.QuizSet(quizSetId);
+            QuizAttempt.QuizSet newQuizSet = new QuizAttempt.QuizSet(quizSetId);
             newQuizSet.setQuizSetId(quizSetId);
             newQuizSet.setQuizSetAttempts(new ArrayList<>(List.of(newAttempt)));
             quizAttempt.setQuizSet(new ArrayList<>(List.of(newQuizSet)));
@@ -65,7 +66,7 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
     }
 
 
-    public Optional<com.edu_backend.model.QuizAttempt> getResultsByUserIdAndQuizSetId(String userId, String quizSetId) {
+    public Optional<QuizAttempt.QuizSet> getResultsByUserIdAndQuizSetId(String userId, String quizSetId) {
         return quizAttemptRepository.findByUserIdAndQuizSetQuizSetId(userId, quizSetId);
     }
 }

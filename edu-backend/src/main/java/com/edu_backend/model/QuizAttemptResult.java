@@ -18,7 +18,7 @@ public class QuizAttemptResult {
     @Id
     private String quizAttemptResultId; // Unique identifier for the analysis
     @NonNull
-    private String resultId; // Reference to the raw result
+    private String quizAttemptId; // Reference to the raw result
     @NonNull
     private String userId; // User ID for easy querying
     @NonNull

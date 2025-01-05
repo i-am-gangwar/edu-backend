@@ -21,6 +21,7 @@ public class QuestionDTO {
 
     @Data
     public static class Option {
+        private String id;
         private String text;
         private boolean isCorrect;
     }

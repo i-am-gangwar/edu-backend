@@ -7,5 +7,5 @@ import java.util.Optional;
 public interface QuizAttemptRepository extends MongoRepository<QuizAttempt, String> {
 
       Optional<QuizAttempt> findByUserId(String userId);
-      Optional<QuizAttempt> findByUserIdAndQuizSetQuizSetId(String userId, String quizSetId);
+      Optional<QuizAttempt.QuizSet> findByUserIdAndQuizSetQuizSetId(String userId, String quizSetId);
 }
