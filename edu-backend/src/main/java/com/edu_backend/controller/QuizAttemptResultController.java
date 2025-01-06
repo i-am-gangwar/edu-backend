@@ -23,17 +23,18 @@ public class QuizAttemptResultController {
 
     @PostMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
     public ResponseEntity<?> saveQuizAttemptResult(@PathVariable String userId, @PathVariable String quizSetId, @PathVariable String quizSetAttemptId) {
-        Optional<QuizAttempt.QuizSetAttempt> quizAttempt = mongoService.findQuizSetAttempt(userId, quizSetId, quizSetAttemptId);  // fetch quizSetAttempt from database
-        QuizAttemptResult.QuizSetAttemptResult quizResultCalculated = quizAttemptResultService.calculateResultOfQuizAttempt(quizSetAttemptId, quizAttempt); // calculating result of attempted quiz
-
-        QuizAttemptResult result =  quizAttemptResultService.saveQuizAttemptResult(userId,quizSetId,quizResultCalculated);
-
-      if (result !=null){
-          return  new ResponseEntity<>("Result Saved",HttpStatus.OK);
-      }
-      else{
-          return  new ResponseEntity<>("Result not Saved",HttpStatus.NOT_FOUND);
-      }
-
+       try{
+           Optional<QuizAttempt.QuizSetAttempt> quizAttempt = mongoService.findQuizSetAttempt(userId, quizSetId, quizSetAttemptId);  // fetch quizSetAttempt from database
+           QuizAttemptResult.QuizSetAttemptResult quizResultCalculated = quizAttemptResultService.calculateResultOfQuizAttempt(quizSetAttemptId, quizAttempt); // calculating result of attempted quiz
+           QuizAttemptResult result =  quizAttemptResultService.saveQuizAttemptResult(userId,quizSetId,quizResultCalculated);
+           if (result!=null)
+               return  ResponseEntity.status(HttpStatus.CREATED).body("Quiz Attempt Result saved");
+           else
+               return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz Attempt Result not saved\n"+"UserId: "+userId+ "\nQuizSetId: "+quizSetId+"\nQuizAttemptId: "+quizSetAttemptId);
+       }
+       catch (Exception e){
+           System.out.println("exception:"+ e);
+           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again.");
+       }
       }
 }

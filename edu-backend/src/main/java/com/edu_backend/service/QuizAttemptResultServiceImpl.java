@@ -16,7 +16,6 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
     @Autowired
     QuizAttemptResultRepository quizAttemptResultRepository;
-
     @Autowired
     QuestionService questionService;
     @Autowired
@@ -28,9 +27,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
        // fetch quizSetAttemptResult and update it in DB
         QuizAttemptResult quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);
 // Assign either the retrieved result or null to the variable
-
         if (quizSetAttemptResult!=null) {
-
             Optional<QuizAttemptResult.QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
                     .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
             if (quizSetResult.isPresent()) {
@@ -65,8 +62,12 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         int totalAttemptedQuestions = 0;
         int correctAnswers = 0;
         int incorrectAnswers = 0;
-        Map<String, Integer> subjectWiseScores = new HashMap<>();
-        Map<String, Integer> subjectWiseCategoryScores = new HashMap<>();
+        Map<String, Integer> subjectScoresForCorrectAns = new HashMap<>();
+        Map<String, Integer> subjectCategoryScoresForCorrectAns = new HashMap<>();
+        Map<String, Integer> subjectScoresForInCorrectAns = new HashMap<>();
+        Map<String, Integer> subjectCategoryScoresForInForCorrectAns = new HashMap<>();
+        Map<String, Integer> subjectScoresForNotAttemptedQ = new HashMap<>();
+        Map<String, Integer> subjectCategoryScoresNotAttemptedQ = new HashMap<>();
 
         try {
             // Iterate through the quizSetAttempt's questions
@@ -90,11 +91,18 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                     if (selectedAnswers.size() == correctOptionIds.size() &&
                             new HashSet<>(selectedAnswers).containsAll(correctOptionIds)) {
                         correctAnswers++;
-                        subjectWiseScores.merge(question.getSubjectId(), 1, Integer::sum);
-                        subjectWiseCategoryScores.merge(question.getCategory(), 1, Integer::sum);
+                        subjectScoresForCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectCategoryScoresForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     } else {
                         incorrectAnswers++;
+                        subjectScoresForInCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectCategoryScoresForInForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     }
+                }
+                else{
+                    subjectScoresForNotAttemptedQ.merge(question.getSubjectId(), 1, Integer::sum);
+                    subjectCategoryScoresNotAttemptedQ.merge(question.getCategory(), 1, Integer::sum);
+
                 }
             }
             // Calculate and set final metrics
@@ -103,8 +111,17 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             quizSetAttemptResult.setCorrectAnswers(correctAnswers);
             quizSetAttemptResult.setInCorrectAnswers(incorrectAnswers);
             quizSetAttemptResult.setAccuracy((correctAnswers * 100.0) / totalAttemptedQuestions);
-            quizSetAttemptResult.setSubjectWiseScores(subjectWiseScores);
-            quizSetAttemptResult.setSubjectWiseCategoryScores(subjectWiseCategoryScores);
+            // correct subject and their category details
+            quizSetAttemptResult.setSubjectScoresForCorrectAnswer(subjectScoresForCorrectAns);
+            quizSetAttemptResult.setSubjectCategoryScoresForCorrectAnswer(subjectCategoryScoresForCorrectAns);
+            // incorrect subject and their category details
+            quizSetAttemptResult.setSubjectScoresForInCorrectAnswer(subjectScoresForInCorrectAns);
+            quizSetAttemptResult.setSubjectCategoryScoresForInCorrectAnswer(subjectCategoryScoresForInForCorrectAns);
+            // Not attempted questions subject and their category details
+            quizSetAttemptResult.setSubjectScoresForNotAttemptedQ(subjectScoresForNotAttemptedQ);
+            quizSetAttemptResult.setSubjectCategoryScoresNotAttemptedQ(subjectCategoryScoresNotAttemptedQ);
+            quizSetAttemptResult.setTimeSpent(quizSetAttempt.get().getTotalTimeTakenToAttempt());
+            quizSetAttemptResult.setAnalyzedAt(new Date());
 
             System.out.println("Result calculated: " + quizSetAttemptResult);
 
