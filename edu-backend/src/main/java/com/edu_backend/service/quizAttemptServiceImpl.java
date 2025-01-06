@@ -64,9 +64,4 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
         return quizAttemptRepository.save(quizAttempt);
 
     }
-
-
-    public Optional<QuizAttempt.QuizSet> getResultsByUserIdAndQuizSetId(String userId, String quizSetId) {
-        return quizAttemptRepository.findByUserIdAndQuizSetQuizSetId(userId, quizSetId);
-    }
 }

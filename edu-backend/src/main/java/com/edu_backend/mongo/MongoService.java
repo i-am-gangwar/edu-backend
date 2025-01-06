@@ -39,4 +39,29 @@ public class MongoService {
         }
         return Optional.empty(); // Return empty if not found
     }
+
+    // Method to find a QuizSet by userId and quizSetId
+    public Optional<QuizAttempt.QuizSet> findQuizSet(String userId, String quizSetId) {
+        Criteria criteria = new Criteria();
+        // Build the query using $elemMatch to ensure both conditions in the array match
+        criteria.andOperator(
+                Criteria.where("userId").is(userId),
+                Criteria.where("quizSet")
+                        .elemMatch(
+                                Criteria.where("quizSetId").is(quizSetId)));
+
+        // Use dynamic query utility method
+        QuizAttempt quizAttempt = mongoQueryUtil.findOneByCriteria(QuizAttempt.class, criteria);
+        // If the quizAttempt is found, loop through quizSets to find the quizSetAttempt
+        if (quizAttempt != null) {
+            for (QuizAttempt.QuizSet quizSet : quizAttempt.getQuizSet()) {
+                    if (quizSet.getQuizSetId().equals(quizSetId))
+                        return Optional.of(quizSet); // Return found quizSetAttempt
+            }
+        }
+        return Optional.empty(); // Return empty if not found
+    }
+
+
+
 }
