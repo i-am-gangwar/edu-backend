@@ -9,6 +9,8 @@ import java.util.*;
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class QuizAttempt {
 
     @Id

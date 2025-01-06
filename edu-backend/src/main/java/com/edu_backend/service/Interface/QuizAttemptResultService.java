@@ -4,6 +4,6 @@ import com.edu_backend.model.QuizAttemptResult;
 
 public interface QuizAttemptResultService {
 
-    boolean calculateQuizAttemptResult(String userId,String quizSetId,String quizAttemptId);
+    QuizAttemptResult saveQuizAttemptResult(String userId,String quizSetId,QuizAttemptResult.QuizSetAttemptResult quizResultCalculated);
 
 }
