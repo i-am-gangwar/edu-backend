@@ -9,7 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-@Document(collection = "QuizAttemptAnalysis")
+@Document(collection = "QuizAnalysis")
 @Getter
 @Setter
 @ToString
