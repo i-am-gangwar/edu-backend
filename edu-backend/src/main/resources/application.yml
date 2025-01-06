@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: education_db
+      auto-index-creation: true
+      ssl:
+        enabled: false
+      #username:
+      #password
