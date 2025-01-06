@@ -9,7 +9,9 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
 public class EduBackendApplication {
 
 	public static void main(String[] args) {
+
 		SpringApplication.run(EduBackendApplication.class, args);
+		System.out.println("Application Started");
 	}
 
 }
