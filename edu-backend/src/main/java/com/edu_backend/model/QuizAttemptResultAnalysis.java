@@ -1,5 +1,6 @@
 package com.edu_backend.model;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -15,11 +16,18 @@ import java.util.Map;
 @ToString
 public class QuizAttemptResultAnalysis {
     @Id
+    private String id;
     private String userId; // Links to the userId in the QuizSetAttempt schema
-    private int totalScore;
-    private double averageScore;
-    private int highScore;
-    private Map<String, Integer> subjectWiseScores = new HashMap<>(); // Key: Subject, Value: Score
-    private int quizzesTaken;
-    private Date lastUpdated;
+
+    @Data
+    private static class QuizResultAnanlysis {
+        private int totalQuizes;
+        private int totalMarks;
+        private int totalScore;
+        private double averageScore;
+        private int highestScore;
+        private int lowestScore;
+        private Map<String, Integer> subjectWiseScores = new HashMap<>(); // Key: Subject, Value: Score
+        private Date lastUpdatedAt;
+    }
 }
