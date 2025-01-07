@@ -1,6 +1,16 @@
 package com.edu_backend.controller;
 
+import com.edu_backend.model.AllResultsAnalysis;
+import com.edu_backend.model.QuizAttemptResult;
 import com.edu_backend.repository.QuizAttemptResultAnalysisRepository;
+import com.edu_backend.repository.QuizAttemptResultRepository;
+import com.edu_backend.service.QuizAttemptResultAnalysisServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -8,24 +18,26 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/analytics")
 public class QuizAttemptResultAnalysisController {
 
-    private final QuizAttemptResultAnalysisRepository quizAttemptResultAnalysisRepository;
+     @Autowired
+    QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl;
 
-    public QuizAttemptResultAnalysisController(QuizAttemptResultAnalysisRepository quizAttemptResultAnalysisRepository) {
-        this.quizAttemptResultAnalysisRepository = quizAttemptResultAnalysisRepository;
-    }
+     @Autowired
+    QuizAttemptResultRepository quizAttemptResultRepository;
 
-//    public AnalyticsController(AnalyticsSummaryRepository analyticsSummaryRepository) {
-//        this.resultAnalysisRepository = analyticsSummaryRepository;
-//    }
-//
-//    public QuizAttemptResultAnalysisController(ResultAnalysisRepository resultAnalysisRepository) {
-//        this.resultAnalysisRepository = resultAnalysisRepository;
-//    }
-//
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<AnalyticsSummary> getAnalytics(@PathVariable String userId) {
-//        return resultAnalysisRepository.findById(userId)
-//                .map(ResponseEntity::ok)
-//                .orElseThrow(() -> new IllegalArgumentException("No analytics found for user: " + userId));
-//    }
+     @PostMapping("/{userId}")
+    public ResponseEntity<?> ResultAnalysis(@PathVariable String userId){
+         QuizAttemptResult userResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);
+         System.out.println("userResult: "+userResult);
+         if (userResult!=null){
+             AllResultsAnalysis allResultsAnalysis = quizAttemptResultAnalysisServiceImpl.ResultAnalysis(userResult);
+             if(allResultsAnalysis!=null)
+                 return ResponseEntity.status(HttpStatus.CREATED).body(allResultsAnalysis);
+             else
+                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do analysis Pls try again!");
+        }
+        else
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body( "No UserID: %s found to calculate results analysis!" + userId);
+         return null;
+     }
+
 }

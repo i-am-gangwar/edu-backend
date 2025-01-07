@@ -24,12 +24,14 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
     @Override
     @Transactional
     public QuizAttemptResult saveQuizAttemptResult(String userId, String quizSetId,QuizAttemptResult.QuizSetAttemptResult quizResult ) {
-       // fetch quizSetAttemptResult and update it in DB
-        QuizAttemptResult quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);
-// Assign either the retrieved result or null to the variable
-        if (quizSetAttemptResult!=null) {
+
+        QuizAttemptResult quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);    // fetch quizSetAttemptResult and update it in DB
+
+        if (quizSetAttemptResult!=null) {// Assign either the retrieved result or null to the variable
+
             Optional<QuizAttemptResult.QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
                     .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
+
             if (quizSetResult.isPresent()) {
                 QuizAttemptResult.QuizSetResult result = quizSetResult.get();
                 result.getQuizSetAttemptResults().add(quizResult);
@@ -39,8 +41,9 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                 quizSetAttemptResult.getQuizSetResult().add(newResult);
             }
 
-        } else {
-            // Create new QuizSetAttemptResult document with the new QuizSet and attempt
+        }
+        else {   // Create new QuizSetAttemptResult document with the new QuizSet and attempt
+
             quizSetAttemptResult = new QuizAttemptResult();
             quizSetAttemptResult.setUserId(userId);
             QuizAttemptResult.QuizSetResult newResult = new QuizAttemptResult.QuizSetResult(quizSetId);
@@ -56,12 +59,10 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
     @Transactional
     public QuizAttemptResult.QuizSetAttemptResult calculateResultOfQuizAttempt(String quizSetAttemptId, Optional<QuizAttempt.QuizSetAttempt> quizSetAttempt) {
+
         QuizAttemptResult.QuizSetAttemptResult quizSetAttemptResult = new QuizAttemptResult.QuizSetAttemptResult(quizSetAttemptId);
         // Initialize counters
-        int totalQuestions = quizSetAttempt.get().getQuizSetAttempt().size();
-        int totalAttemptedQuestions = 0;
-        int correctAnswers = 0;
-        int incorrectAnswers = 0;
+        int totalQuestions = quizSetAttempt.get().getQuizSetAttempt().size(), totalAttemptedQuestions = 0, correctAnswers = 0, incorrectAnswers = 0;
         Map<String, Integer> subjectScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectCategoryScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectScoresForInCorrectAns = new HashMap<>();
@@ -69,8 +70,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         Map<String, Integer> subjectScoresForNotAttemptedQ = new HashMap<>();
         Map<String, Integer> subjectCategoryScoresNotAttemptedQ = new HashMap<>();
 
-        try {
-            // Iterate through the quizSetAttempt's questions
+        try {   // Iterate through the quizSetAttempt's questions
             for (Map.Entry<String, List<String>> entry : quizSetAttempt.get().getQuizSetAttempt().entrySet()) {
                 String questionId = entry.getKey();
                 List<String> selectedAnswers = entry.getValue();
@@ -122,17 +122,15 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             quizSetAttemptResult.setSubjectCategoryScoresNotAttemptedQ(subjectCategoryScoresNotAttemptedQ);
             quizSetAttemptResult.setTimeSpent(quizSetAttempt.get().getTotalTimeTakenToAttempt());
             quizSetAttemptResult.setAnalyzedAt(new Date());
-
             System.out.println("Result calculated: " + quizSetAttemptResult);
 
             return quizSetAttemptResult;
 
-
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.err.println("Error calculating quiz attempt result: " + e.getMessage());
             throw new RuntimeException("Result not calculated due to an error", e);
         }
-
-
     }
 }
+

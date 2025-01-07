@@ -25,34 +25,29 @@ public class quizAttemptServiceImpl implements QuizAttemptService {
     }
 
     public QuizAttempt addQuizAttempt(String userId, String quizSetId, QuizAttempt.QuizSetAttempt newAttempt){
+
         Optional<com.edu_backend.model.QuizAttempt> optionalResults  = quizAttemptRepository.findByUserId(userId);
-        System.out.println("user:" + optionalResults);
         newAttempt.setDate(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-        System.out.println("set date:" +newAttempt.getDate());
+
         QuizAttempt quizAttempt;
         if (optionalResults .isPresent()) {
+
             quizAttempt = optionalResults.get();
             Optional<com.edu_backend.model.QuizAttempt.QuizSet> optionalQuizSet = quizAttempt.getQuizSet().stream()
-                    .filter(qs -> qs.getQuizSetId().equals(quizSetId))
-                    .findFirst();
+                    .filter(qs -> qs.getQuizSetId().equals(quizSetId)).findFirst();
 
-            if (optionalQuizSet.isPresent()) {
-                // Add to existing QuizSet
+            if (optionalQuizSet.isPresent()) {    // Add to existing QuizSet
                 QuizAttempt.QuizSet quizSet = optionalQuizSet.get();
                 quizSet.getQuizSetAttempts().add(newAttempt);
-
-            } else {
-                // Create new QuizSet with the new attempt
+            }
+            else {      // Create new QuizSet with the new attempt
                 QuizAttempt.QuizSet newQuizSet = new QuizAttempt.QuizSet(quizSetId);
                 newQuizSet.setQuizSetId(quizSetId);
                 newQuizSet.setQuizSetAttempts(new ArrayList<>(List.of(newAttempt)));
                 quizAttempt.getQuizSet().add(newQuizSet);
-
-
             }
         }
-        else{
-            // Create new QuizSetAttempt document with the new QuizSet and attempt
+        else{      // Create new QuizSetAttempt document with the new QuizSet and attempt
             quizAttempt = new QuizAttempt();
             quizAttempt.setUserId(userId);
             QuizAttempt.QuizSet newQuizSet = new QuizAttempt.QuizSet(quizSetId);
