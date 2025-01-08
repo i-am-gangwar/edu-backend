@@ -14,7 +14,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AllResultsAnalysis {
+public class QuizResultsAnalysis {
 
     @Id
     @NotBlank(message = "Result Analysis ID cannot be blank")

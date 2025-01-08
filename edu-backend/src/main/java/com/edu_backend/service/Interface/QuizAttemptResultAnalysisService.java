@@ -1,8 +1,8 @@
 package com.edu_backend.service.Interface;
 
-import com.edu_backend.model.AllResultsAnalysis;
 import com.edu_backend.model.QuizAttemptResult;
+import com.edu_backend.model.QuizResultsAnalysis;
 
 public interface QuizAttemptResultAnalysisService {
-    AllResultsAnalysis ResultAnalysis(QuizAttemptResult userResult);
+    QuizResultsAnalysis calculateResultAnalysis(QuizAttemptResult userResult,QuizResultsAnalysis quizResultsAnalysis);
 }

@@ -1,9 +1,10 @@
 package com.edu_backend.service;
 
-import com.edu_backend.model.AllResultsAnalysis;
+import com.edu_backend.model.QuizResultsAnalysis;
 import com.edu_backend.model.QuizAttemptResult;
-import com.edu_backend.repository.QuizAttemptResultAnalysisRepository;
 import com.edu_backend.repository.QuizAttemptResultRepository;
+import com.edu_backend.repository.QuizAttemptResultRepository;
+import com.edu_backend.repository.QuizResultAnalysisRepository;
 import com.edu_backend.service.Interface.QuizAttemptResultAnalysisService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,26 +16,45 @@ import java.util.*;
 @AllArgsConstructor
 public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAnalysisService {
 
+
     @Autowired
     QuizAttemptResultRepository  quizAttemptResultRepository;
     @Autowired
-    QuizAttemptResultAnalysisRepository quizAttemptResultAnalysisRepository;
+    QuizResultAnalysisRepository quizResultAnalysisRepository;
+
+
+
+    public QuizResultsAnalysis createResultAnalysis(QuizAttemptResult userResult) {
+        QuizResultsAnalysis quizResultsAnalysis = new QuizResultsAnalysis();
+        quizResultsAnalysis.setOverallPerformance(new QuizResultsAnalysis.OverallPerformance());
+        quizResultsAnalysis.setUserId(userResult.getUserId());
+        QuizResultsAnalysis resultsAnalysis = calculateResultAnalysis(userResult,quizResultsAnalysis);
+        quizResultAnalysisRepository.save(quizResultsAnalysis);
+        return  resultsAnalysis;
+    }
+
+
+    public QuizResultsAnalysis updateResultAnalysis(QuizAttemptResult userResult,QuizResultsAnalysis quizResultsAnalysis) {
+        QuizResultsAnalysis resultsAnalysis = calculateResultAnalysis(userResult,quizResultsAnalysis);
+        quizResultAnalysisRepository.save(quizResultsAnalysis);
+        return  resultsAnalysis;
+    }
+
+
 
     @Override
-    public AllResultsAnalysis ResultAnalysis(QuizAttemptResult userResult){
-
+    public QuizResultsAnalysis calculateResultAnalysis(QuizAttemptResult userResult, QuizResultsAnalysis quizResultsAnalysis){
          List<QuizAttemptResult.QuizSetResult> quizSetResult = userResult.getQuizSetResult();
+         QuizResultsAnalysis.OverallPerformance overAllper =quizResultsAnalysis.getOverallPerformance();
+         System.out.println("Perform: "+ overAllper);
 
-         AllResultsAnalysis allResultsAnalysis = new AllResultsAnalysis();
-        System.out.println("allana: "+ allResultsAnalysis);
-         AllResultsAnalysis.OverallPerformance overAllper = new AllResultsAnalysis.OverallPerformance();
-        System.out.println("Perform: "+ overAllper);
-         allResultsAnalysis.setUserId(userResult.getUserId());
+
 
          for(QuizAttemptResult.QuizSetResult qzSet: quizSetResult){
              // add total attempted set of this quiz set
              overAllper.setTotalQuizSets(overAllper.getTotalQuizSets()+ qzSet.getQuizSetAttemptResults().size());
              for (QuizAttemptResult.QuizSetAttemptResult attemptResult: qzSet.getQuizSetAttemptResults()){
+
 
                  // total q attempted + not attempted
                  overAllper.setTotalQ(overAllper.getTotalQ()+ attemptResult.getTotalAttemptedQuestions()+attemptResult.getTotalNotAttemptedQuestions());
@@ -92,9 +112,7 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
              }
 
          }
-         allResultsAnalysis.setOverallPerformance(overAllper);
-         System.out.println("Analysis: "+allResultsAnalysis);
-         quizAttemptResultAnalysisRepository.save(allResultsAnalysis);
-        return allResultsAnalysis;
+         quizResultsAnalysis.setOverallPerformance(overAllper);
+        return quizResultsAnalysis;
     }
 }
