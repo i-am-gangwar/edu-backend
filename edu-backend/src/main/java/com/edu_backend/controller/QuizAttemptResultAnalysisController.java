@@ -1,14 +1,13 @@
 package com.edu_backend.controller;
 
 
-import com.edu_backend.model.QuizAttemptResult;
-import com.edu_backend.model.QuizResultsAnalysis;
+import com.edu_backend.model.QuizResults.QuizResults;
+import com.edu_backend.model.QuizAnanlysis.ResultsAnalysis;
 import com.edu_backend.repository.QuizAttemptResultRepository;
 import com.edu_backend.repository.QuizResultAnalysisRepository;
 import com.edu_backend.service.QuizAttemptResultAnalysisServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,21 +28,20 @@ public class QuizAttemptResultAnalysisController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<?> saveResultAnalysis(@PathVariable String userId) {
-        QuizAttemptResult userResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);
-        System.out.println("userResult: " + userResult);
+        QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
         if (userResult != null) {
-            QuizResultsAnalysis quizResultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-            if (quizResultsAnalysis == null) {
-                QuizResultsAnalysis createdResultsAnalysis = quizAttemptResultAnalysisServiceImpl.createResultAnalysis(userResult);
-                if (createdResultsAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(createdResultsAnalysis);
+            ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
+            if (resultsAnalysis == null) {
+                ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysis(userResult);
+                if (createdAnalysis != null)
+                    return ResponseEntity.status(HttpStatus.CREATED).body(createdAnalysis);
                 else
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do create analysis Pls try again! userId: "+userId);
             }
             else{
-                QuizResultsAnalysis updateResultsAnalysis = quizAttemptResultAnalysisServiceImpl.updateResultAnalysis(userResult,quizResultsAnalysis);
-                if (updateResultsAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(updateResultsAnalysis);
+                ResultsAnalysis updateAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysis(userResult, resultsAnalysis);
+                if (updateAnalysis != null)
+                    return ResponseEntity.status(HttpStatus.CREATED).body(updateAnalysis);
                 else
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do update analysis Pls try again! userId: "+userId);
             }
@@ -58,9 +56,9 @@ public class QuizAttemptResultAnalysisController {
     @GetMapping("/{userId}")
     public ResponseEntity<?> getresultAnalysis(@PathVariable String userId) {
         try {
-            QuizResultsAnalysis quizResultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-            if (quizResultsAnalysis != null)
-                return ResponseEntity.status(HttpStatus.FOUND).body(quizResultsAnalysis);
+            ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
+            if (resultsAnalysis != null)
+                return ResponseEntity.status(HttpStatus.FOUND).body(resultsAnalysis);
             else
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No UserID: %s found to calculate results analysis in database!" + userId);
         } catch (Exception ex) {

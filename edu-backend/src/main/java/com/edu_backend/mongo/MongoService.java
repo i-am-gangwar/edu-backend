@@ -1,67 +1,82 @@
 package com.edu_backend.mongo;
 
-import com.edu_backend.model.QuizAttempt;
+import com.edu_backend.model.QuizAttempts.QuizSet;
+import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
+import com.edu_backend.model.QuizAttempts.QuizAttempts;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
-public class MongoService {
+public class MongoService implements MongoQueryUtil{
 
      @Autowired
-     MongoQueryUtil mongoQueryUtil;
+     MongoTemplate mongoTemplate;
 
-    // Method to find a QuizSetAttempt by userId, quizSetId, and quizSetAttemptId
-    public Optional<QuizAttempt.QuizSetAttempt> findQuizSetAttempt(String userId, String quizSetId, String quizSetAttemptId) {
+    @Override
+    public Query createQuery(String userId, String quizSetId) {
+        Criteria criteria = new Criteria();   // Build the query using $elemMatch to ensure both conditions in the array match
+        criteria.andOperator(
+                Criteria.where("userId").is(userId),
+                Criteria.where("quizSets")
+                        .elemMatch(
+                                Criteria.where("quizSetId").is(quizSetId)));
+        return new Query(criteria);
+    }
+
+    @Override
+    public Query createQuery(String userId, String quizSetId, String quizSetAttemptId) {
         Criteria criteria = new Criteria();
         // Build the query using $elemMatch to ensure both conditions in the array match
         criteria.andOperator(
                 Criteria.where("userId").is(userId),
-                Criteria.where("quizSet")
+                Criteria.where("quizSets")
                         .elemMatch(
                                 Criteria.where("quizSetId").is(quizSetId)
                                         .and("quizSetAttempts")
                                         .elemMatch(Criteria.where("quizSetAttemptId").is(quizSetAttemptId)))
         );
 
-        // Use dynamic query utility method
-        QuizAttempt quizAttempt = mongoQueryUtil.findOneByCriteria(QuizAttempt.class, criteria);
-        // If the quizAttempt is found, loop through quizSets to find the quizSetAttempt
-        if (quizAttempt != null) {
-            for (QuizAttempt.QuizSet quizSet : quizAttempt.getQuizSet()) {
-                for (QuizAttempt.QuizSetAttempt quizSetAttempt : quizSet.getQuizSetAttempts()) {
+        return new Query(criteria);
+    }
+
+
+
+    // Method to find a QuizSetAttempt by userId, quizSetId, and quizSetAttemptId
+    public QuizSetAttempt findQuizSetAttempt(String userId, String quizSetId, String quizSetAttemptId) {
+        Query q = createQuery(userId,quizSetId,quizSetAttemptId);
+        QuizAttempts quizAttempts = mongoTemplate.findOne(q, QuizAttempts.class);
+        if (quizAttempts != null) {
+            for (QuizSet quizSet : quizAttempts.getQuizSets()) {
+                for (QuizSetAttempt quizSetAttempt : quizSet.getQuizSetAttempts()) {
                     if (quizSetAttempt.getQuizSetAttemptId().equals(quizSetAttemptId)) {
-                        return Optional.of(quizSetAttempt); // Return found quizSetAttempt
+                        return quizSetAttempt; // Return found quizSetAttempt
                     }
                 }
             }
         }
-        return Optional.empty(); // Return empty if not found
+        return null;
     }
+
 
     // Method to find a QuizSet by userId and quizSetId
-    public Optional<QuizAttempt.QuizSet> findQuizSet(String userId, String quizSetId) {
-        Criteria criteria = new Criteria();
-        // Build the query using $elemMatch to ensure both conditions in the array match
-        criteria.andOperator(
-                Criteria.where("userId").is(userId),
-                Criteria.where("quizSet")
-                        .elemMatch(
-                                Criteria.where("quizSetId").is(quizSetId)));
-
-        // Use dynamic query utility method
-        QuizAttempt quizAttempt = mongoQueryUtil.findOneByCriteria(QuizAttempt.class, criteria);
+    public QuizSet findQuizSet(String userId, String quizSetId) {
+        Query q = createQuery(userId,quizSetId);
+        QuizAttempts quizAttempts = mongoTemplate.findOne(q, QuizAttempts.class);
         // If the quizAttempt is found, loop through quizSets to find the quizSetAttempt
-        if (quizAttempt != null) {
-            for (QuizAttempt.QuizSet quizSet : quizAttempt.getQuizSet()) {
+        System.out.println("query: "+q);
+        if (quizAttempts != null) {
+            for (QuizSet quizSet : quizAttempts.getQuizSets()) {
                     if (quizSet.getQuizSetId().equals(quizSetId))
-                        return Optional.of(quizSet); // Return found quizSetAttempt
+                        return quizSet; // Return found quizSetAttempt
             }
         }
-        return Optional.empty(); // Return empty if not found
+        return null; // Return empty if not found
     }
-
 
 
 }

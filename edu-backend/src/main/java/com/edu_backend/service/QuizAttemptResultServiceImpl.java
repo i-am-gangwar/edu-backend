@@ -1,8 +1,10 @@
 package com.edu_backend.service;
 
 import com.edu_backend.dto.QuestionDTO;
-import com.edu_backend.model.QuizAttempt;
-import com.edu_backend.model.QuizAttemptResult;
+import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
+import com.edu_backend.model.QuizResults.QuizResults;
+import com.edu_backend.model.QuizResults.QuizSetAttemptResult;
+import com.edu_backend.model.QuizResults.QuizSetResult;
 import com.edu_backend.mongo.MongoService;
 import com.edu_backend.repository.QuizAttemptResultRepository;
 import com.edu_backend.service.Interface.QuizAttemptResultService;
@@ -18,39 +20,44 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
     QuizAttemptResultRepository quizAttemptResultRepository;
     @Autowired
     QuestionService questionService;
-    @Autowired
-    private MongoService mongoService;
+
+    public QuizResults createQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult){
+        QuizResults quizSetAttemptResult = new QuizResults();
+        quizSetAttemptResult.setUserId(userId);
+        QuizSetResult newResult = new QuizSetResult();
+        newResult.setQuizSetId(quizSetId);
+        newResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizResult)));
+        quizSetAttemptResult.setQuizSetResult(new ArrayList<>(List.of(newResult)));
+        return quizSetAttemptResult;
+    }
+
+    public QuizSetResult createQuizSetResult(String quizSetId,QuizSetAttemptResult quizSetAttemptResult){
+        QuizSetResult newQuizSetResult = new QuizSetResult();
+        newQuizSetResult.setQuizSetId(quizSetId);
+        newQuizSetResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizSetAttemptResult)));
+        return newQuizSetResult;
+
+    }
+
 
     @Override
     @Transactional
-    public QuizAttemptResult saveQuizAttemptResult(String userId, String quizSetId,QuizAttemptResult.QuizSetAttemptResult quizResult ) {
+    public QuizResults saveQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult ) {
 
-        QuizAttemptResult quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId).orElse(null);    // fetch quizSetAttemptResult and update it in DB
+        QuizResults quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId);
 
-        if (quizSetAttemptResult!=null) {// Assign either the retrieved result or null to the variable
-
-            Optional<QuizAttemptResult.QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
+        if (quizSetAttemptResult!=null) {
+            Optional<QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
                     .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
 
-            if (quizSetResult.isPresent()) {
-                QuizAttemptResult.QuizSetResult result = quizSetResult.get();
-                result.getQuizSetAttemptResults().add(quizResult);
-            } else {
-                QuizAttemptResult.QuizSetResult newResult = new QuizAttemptResult.QuizSetResult(quizSetId);
-                newResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizResult)));
-                quizSetAttemptResult.getQuizSetResult().add(newResult);
-            }
-
+            if (quizSetResult.isPresent())
+                   quizSetResult.get().getQuizSetAttemptResults().add(quizResult);
+            else
+                quizSetAttemptResult.getQuizSetResult().add(createQuizSetResult(quizSetId,quizResult));
         }
-        else {   // Create new QuizSetAttemptResult document with the new QuizSet and attempt
+        else
+            quizSetAttemptResult = createQuizAttemptResult(userId,quizSetId,quizResult);
 
-            quizSetAttemptResult = new QuizAttemptResult();
-            quizSetAttemptResult.setUserId(userId);
-            QuizAttemptResult.QuizSetResult newResult = new QuizAttemptResult.QuizSetResult(quizSetId);
-            newResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizResult)));
-            quizSetAttemptResult.setQuizSetResult(new ArrayList<>(List.of(newResult)));
-        }
-        // Save the result
         quizAttemptResultRepository.save(quizSetAttemptResult);
         return quizSetAttemptResult;
     }
@@ -58,11 +65,13 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
 
     @Transactional
-    public QuizAttemptResult.QuizSetAttemptResult calculateResultOfQuizAttempt(String quizSetAttemptId, Optional<QuizAttempt.QuizSetAttempt> quizSetAttempt) {
+    public QuizSetAttemptResult calculateResultOfQuizAttempt(String quizSetAttemptId, QuizSetAttempt quizSetAttempt) {
 
-        QuizAttemptResult.QuizSetAttemptResult quizSetAttemptResult = new QuizAttemptResult.QuizSetAttemptResult(quizSetAttemptId);
+        QuizSetAttemptResult quizSetAttemptResult = new QuizSetAttemptResult();
+        quizSetAttemptResult.setQuizSetAttemptId(quizSetAttemptId);
+
         // Initialize counters
-        int totalQuestions = quizSetAttempt.get().getQuizSetAttempt().size(), totalAttemptedQuestions = 0, correctAnswers = 0, incorrectAnswers = 0;
+        int totalQuestions = quizSetAttempt.getQuizSetAttempt().size(), totalAttemptedQuestions = 0, correctAnswers = 0, incorrectAnswers = 0;
         Map<String, Integer> subjectScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectCategoryScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectScoresForInCorrectAns = new HashMap<>();
@@ -71,7 +80,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         Map<String, Integer> subjectCategoryScoresNotAttemptedQ = new HashMap<>();
 
         try {   // Iterate through the quizSetAttempt's questions
-            for (Map.Entry<String, List<String>> entry : quizSetAttempt.get().getQuizSetAttempt().entrySet()) {
+            for (Map.Entry<String, List<String>> entry : quizSetAttempt.getQuizSetAttempt().entrySet()) {
                 String questionId = entry.getKey();
                 List<String> selectedAnswers = entry.getValue();
                 Optional<QuestionDTO> questionDTO = questionService.getQuestionById(questionId);   // Fetch the question details
@@ -120,7 +129,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             // Not attempted questions subject and their category details
             quizSetAttemptResult.setSubjectScoresForNotAttemptedQ(subjectScoresForNotAttemptedQ);
             quizSetAttemptResult.setSubjectCategoryScoresNotAttemptedQ(subjectCategoryScoresNotAttemptedQ);
-            quizSetAttemptResult.setTimeSpent(quizSetAttempt.get().getTotalTimeTakenToAttempt());
+            quizSetAttemptResult.setTimeSpent(quizSetAttempt.getTotalTimeTakenToAttempt());
             quizSetAttemptResult.setAnalyzedAt(new Date());
             System.out.println("Result calculated: " + quizSetAttemptResult);
 
