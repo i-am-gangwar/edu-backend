@@ -8,3 +8,27 @@ spring:
         enabled: false
       #username:
       #password
+      # kafka
+
+  kafka:
+    bootstrap-servers: "<aiven-kafka-broker-address>:9092"
+    properties:
+      security.protocol: SSL
+      ssl.keystore.location: "C:\\Users\\rakes\\Desktop\\eduBackend\\edu-backend\\src\\main\\resources\\kafka-certificates\\combined-service.pem"
+      ssl.keystore.type: PEM
+      ssl.truststore.location: "C:\\Users\\rakes\\Desktop\\eduBackend\\edu-backend\\src\\main\\resources\\kafka-certificates\\ca.pem"
+      ssl.truststore.type: PEM
+      ssl.key.password: "<your-private-key-password-if-required>"
+    consumer:
+      group-id: quiz-result-consumer-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+
+
+
+
