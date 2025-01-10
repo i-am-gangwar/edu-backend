@@ -42,4 +42,16 @@ public class QuizAttemptResultController {
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again.");
        }
     }
+
+
+    // get result by user id
+    // get result by user id and quiz set id
+    // get result by user id and quiz set id and quiz attempt id
+
+    // delete by user id
+    // delete by by user id and quiz set id and quiz attempt id
+
+
+
+
 }

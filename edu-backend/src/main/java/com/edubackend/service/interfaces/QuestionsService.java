@@ -1,4 +1,4 @@
-package com.edu_backend.service.Interface;
+package com.edubackend.service.Interface;
 
 import java.util.List;
 

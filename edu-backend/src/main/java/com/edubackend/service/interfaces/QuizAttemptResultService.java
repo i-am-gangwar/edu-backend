@@ -1,7 +1,7 @@
-package com.edu_backend.service.Interface;
+package com.edubackend.service.Interface;
 
-import com.edu_backend.model.QuizResults.QuizResults;
-import com.edu_backend.model.QuizResults.QuizSetAttemptResult;
+import com.edubackend.model.QuizResults.QuizResults;
+import com.edubackend.model.QuizResults.QuizSetAttemptResult;
 
 public interface QuizAttemptResultService {
     QuizResults saveQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResultCalculated);
