@@ -1,6 +1,6 @@
-package com.edu_backend.service;
+package com.edubackend.service;
 
-import com.edu_backend.dto.QuestionDTO;
+import com.edubackend.dto.QuestionDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -11,8 +11,12 @@ import java.util.Optional;
 @Service
 public class QuestionService {
 
+    private final MongoTemplate mongoTemplate;
+
     @Autowired
-    private MongoTemplate mongoTemplate;
+    public QuestionService(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     public Optional<QuestionDTO> getQuestionById(String questionId) {
         Query query = new Query();

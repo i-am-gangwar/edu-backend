@@ -1,8 +1,7 @@
-package com.edu_backend.dto;
+package com.edubackend.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-
 import java.util.List;
 import java.util.Date;
 

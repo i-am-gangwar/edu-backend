@@ -1,4 +1,4 @@
-package com.edu_backend.model.QuizAttempts;
+package com.edubackend.model.quizattempts;
 
 import jakarta.validation.constraints.*;
 import lombok.*;

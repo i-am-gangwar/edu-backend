@@ -1,10 +1,9 @@
-package com.edubackend.service.Interface;
+package com.edubackend.service.interfaces;
 
-import com.edubackend.model.QuizAnanlysis.ResultsAnalysis;
-import com.edubackend.model.QuizResults.QuizSetResult;
+import com.edubackend.model.quizananlysis.ResultsAnalysis;
+import com.edubackend.model.quizresults.QuizSetResult;
 
 public interface QuizAttemptResultAnalysisService {
     ResultsAnalysis calculateAnalysis(String userId);
     ResultsAnalysis calculateAnalysis(String userId, QuizSetResult quizSetResults);
-  //  ResultsAnalysis calculateResultAnalysis(QuizResults userResult, ResultsAnalysis resultsAnalysis);
 }

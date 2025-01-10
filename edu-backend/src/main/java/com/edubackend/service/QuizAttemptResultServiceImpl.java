@@ -1,13 +1,12 @@
-package com.edu_backend.service;
+package com.edubackend.service;
 
-import com.edu_backend.dto.QuestionDTO;
-import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
-import com.edu_backend.model.QuizResults.QuizResults;
-import com.edu_backend.model.QuizResults.QuizSetAttemptResult;
-import com.edu_backend.model.QuizResults.QuizSetResult;
-import com.edu_backend.mongo.MongoService;
-import com.edu_backend.repository.QuizAttemptResultRepository;
-import com.edu_backend.service.Interface.QuizAttemptResultService;
+import com.edubackend.dto.QuestionDTO;
+import com.edubackend.model.quizattempts.QuizSetAttempt;
+import com.edubackend.model.quizresults.QuizResults;
+import com.edubackend.model.quizresults.QuizSetAttemptResult;
+import com.edubackend.model.quizresults.QuizSetResult;
+import com.edubackend.repository.QuizAttemptResultRepository;
+import com.edubackend.service.interfaces.QuizAttemptResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +15,15 @@ import java.util.*;
 @Service
 public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
+
+  private final   QuizAttemptResultRepository quizAttemptResultRepository;
+  private final QuestionService questionService;
+
     @Autowired
-    QuizAttemptResultRepository quizAttemptResultRepository;
-    @Autowired
-    QuestionService questionService;
+    public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository, QuestionService questionService) {
+        this.quizAttemptResultRepository = quizAttemptResultRepository;
+        this.questionService = questionService;
+    }
 
     public QuizResults createQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult){
         QuizResults quizSetAttemptResult = new QuizResults();
@@ -71,7 +75,10 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         quizSetAttemptResult.setQuizSetAttemptId(quizSetAttemptId);
 
         // Initialize counters
-        int totalQuestions = quizSetAttempt.getQuizSetAttempt().size(), totalAttemptedQuestions = 0, correctAnswers = 0, incorrectAnswers = 0;
+        int totalQuestions = quizSetAttempt.getSetAttempt().size();
+        int totalAttemptedQuestions = 0;
+        int correctAnswers = 0;
+        int incorrectAnswers = 0;
         Map<String, Integer> subjectScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectCategoryScoresForCorrectAns = new HashMap<>();
         Map<String, Integer> subjectScoresForInCorrectAns = new HashMap<>();
@@ -80,7 +87,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         Map<String, Integer> subjectCategoryScoresNotAttemptedQ = new HashMap<>();
 
         try {   // Iterate through the quizSetAttempt's questions
-            for (Map.Entry<String, List<String>> entry : quizSetAttempt.getQuizSetAttempt().entrySet()) {
+            for (Map.Entry<String, List<String>> entry : quizSetAttempt.getSetAttempt().entrySet()) {
                 String questionId = entry.getKey();
                 List<String> selectedAnswers = entry.getValue();
                 Optional<QuestionDTO> questionDTO = questionService.getQuestionById(questionId);   // Fetch the question details
@@ -131,13 +138,10 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             quizSetAttemptResult.setSubjectCategoryScoresNotAttemptedQ(subjectCategoryScoresNotAttemptedQ);
             quizSetAttemptResult.setTimeSpent(quizSetAttempt.getTotalTimeTakenToAttempt());
             quizSetAttemptResult.setAnalyzedAt(new Date());
-            System.out.println("Result calculated: " + quizSetAttemptResult);
-
             return quizSetAttemptResult;
 
         }
         catch (Exception e) {
-            System.err.println("Error calculating quiz attempt result: " + e.getMessage());
             throw new RuntimeException("Result not calculated due to an error", e);
         }
     }

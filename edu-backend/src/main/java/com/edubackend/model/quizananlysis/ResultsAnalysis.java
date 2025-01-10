@@ -1,4 +1,4 @@
-package com.edu_backend.model.QuizAnanlysis;
+package com.edubackend.model.quizananlysis;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;

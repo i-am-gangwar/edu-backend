@@ -1,28 +1,29 @@
-package com.edu_backend.service;
+package com.edubackend.service;
 
-import com.edu_backend.model.QuizAnanlysis.OverallPerformance;
-import com.edu_backend.model.QuizAnanlysis.ResultsAnalysis;
-import com.edu_backend.model.QuizResults.QuizResults;
-import com.edu_backend.model.QuizResults.QuizSetAttemptResult;
-import com.edu_backend.model.QuizResults.QuizSetResult;
-import com.edu_backend.repository.QuizAttemptResultRepository;
-import com.edu_backend.repository.QuizResultAnalysisRepository;
-import com.edu_backend.service.Interface.QuizAttemptResultAnalysisService;
-import lombok.AllArgsConstructor;
+import com.edubackend.model.quizananlysis.OverallPerformance;
+import com.edubackend.model.quizananlysis.ResultsAnalysis;
+import com.edubackend.model.quizresults.QuizResults;
+import com.edubackend.model.quizresults.QuizSetAttemptResult;
+import com.edubackend.model.quizresults.QuizSetResult;
+import com.edubackend.repository.QuizAttemptResultRepository;
+import com.edubackend.repository.QuizResultAnalysisRepository;
+import com.edubackend.service.interfaces.QuizAttemptResultAnalysisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 
 @Service
-@AllArgsConstructor
 public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAnalysisService {
 
+  private final   QuizAttemptResultRepository  quizAttemptResultRepository;
+  private final   QuizResultAnalysisRepository quizResultAnalysisRepository;
 
     @Autowired
-    QuizAttemptResultRepository  quizAttemptResultRepository;
-    @Autowired
-    QuizResultAnalysisRepository quizResultAnalysisRepository;
+    public QuizAttemptResultAnalysisServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository, QuizResultAnalysisRepository quizResultAnalysisRepository) {
+        this.quizAttemptResultRepository = quizAttemptResultRepository;
+        this.quizResultAnalysisRepository = quizResultAnalysisRepository;
+    }
 
     @Override
     public ResultsAnalysis calculateAnalysis(String userId) {
@@ -46,9 +47,6 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
 
     public ResultsAnalysis updateAnalysis(QuizResults userResult, ResultsAnalysis quizResultsAnalysis) {
-        // need to get to know whihc quiz set attempt not calculated
-       // ResultsAnalysis resultsAnalysis = calculateResultAnalysis(userResult,quizResultsAnalysis);
-       // quizResultAnalysisRepository.save(quizResultsAnalysis);
         return  null;
     }
 
@@ -60,10 +58,7 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
         ResultsAnalysis resultsAnalysis = new ResultsAnalysis();
         resultsAnalysis.setUserId(userResult.getUserId());
-        System.out.println("resultsAnalysis object:" + resultsAnalysis);
         OverallPerformance overAllper = new OverallPerformance();
-        System.out.println("resultsAnalysis object:" + resultsAnalysis);
-
         List<QuizSetResult> quizSetResult = userResult.getQuizSetResult();
 
          for(QuizSetResult qzSet: quizSetResult){
@@ -90,12 +85,6 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
                 // accuracy of total correct q out of total attempted
                  overAllper.getMarksMatrics().setOverallAccuracy(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100 /
                          overAllper.getMarksMatrics().getTotalAttemptedQ().getTotal()));
-
-
-                 // total time for per q
-//                 overAllper.setTotalTimeTaken(overAllper.getTotalTimeTaken()+ Integer.parseInt( attemptResult.getTimeSpent()));
-//                 // average time for per q
-//                 overAllper.setAverageTimePerQuestion(Math.round((float) (overAllper.getTotalCorrectScore()) /overAllper.getTotalQ()));
 
                 // subject score for correct q
 

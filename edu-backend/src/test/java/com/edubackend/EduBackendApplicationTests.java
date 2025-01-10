@@ -1,4 +1,4 @@
-package com.edu_backend;
+package com.edubackend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

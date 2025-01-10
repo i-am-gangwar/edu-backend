@@ -1,6 +1,6 @@
-package com.edu_backend.repository;
+package com.edubackend.repository;
 
-import com.edu_backend.model.Questions;
+import com.edubackend.model.Questions;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface QuestionsRepository extends MongoRepository<Questions, String>{

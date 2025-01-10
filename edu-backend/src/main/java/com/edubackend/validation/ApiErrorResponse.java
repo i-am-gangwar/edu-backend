@@ -1,4 +1,4 @@
-package com.edu_backend.validation;
+package com.edubackend.validation;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

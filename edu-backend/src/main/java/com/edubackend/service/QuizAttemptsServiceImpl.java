@@ -1,10 +1,10 @@
-package com.edu_backend.service;
+package com.edubackend.service;
 
-import com.edu_backend.model.QuizAttempts.QuizSet;
-import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
-import com.edu_backend.model.QuizAttempts.QuizAttempts;
-import com.edu_backend.repository.QuizAttemptsRepository;
-import com.edu_backend.service.Interface.QuizAttemptsService;
+import com.edubackend.model.quizattempts.QuizSet;
+import com.edubackend.model.quizattempts.QuizSetAttempt;
+import com.edubackend.model.quizattempts.QuizAttempts;
+import com.edubackend.repository.QuizAttemptsRepository;
+import com.edubackend.service.interfaces.QuizAttemptsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.text.SimpleDateFormat;
@@ -18,10 +18,14 @@ import java.util.Optional;
 @Service
 public class QuizAttemptsServiceImpl implements QuizAttemptsService {
 
-    @Autowired
-    QuizAttemptsRepository quizAttemptsRepository;
+   private final QuizAttemptsRepository quizAttemptsRepository;
 
-    @Override
+    @Autowired
+    public QuizAttemptsServiceImpl(QuizAttemptsRepository quizAttemptsRepository) {
+        this.quizAttemptsRepository = quizAttemptsRepository;
+    }
+
+
     public List<QuizAttempts> getAllResultsOfUser() {
         return quizAttemptsRepository.findAll();
     }
@@ -34,7 +38,6 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
         newQuizSet.setQuizSetId(quizSetId);
         newQuizSet.setQuizSetAttempts(new ArrayList<>(List.of(newAttempt)));
         createResults.setQuizSets(new ArrayList<>(List.of(newQuizSet)));
-        System.out.println("quizSet: "+newAttempt);
         return createResults;
 
     }

@@ -1,4 +1,4 @@
-package com.edu_backend;
+package com.edubackend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

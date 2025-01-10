@@ -1,8 +1,7 @@
-package com.edu_backend.model;
+package com.edubackend.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Data;
-import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.List;
 public class Questions {
 
     @Id
-    private String ObjectId ;
+    private String objectId ;
     private String questionText;
     private String subjectId;
     private String examId;
@@ -27,7 +26,7 @@ public class Questions {
     @Override
     public String toString() {
         return "Questions{" +
-                "ObjectId='" + ObjectId + '\'' +
+                "ObjectId='" + objectId + '\'' +
                 ", questionText='" + questionText + '\'' +
                 ", subjectId='" + subjectId + '\'' +
                 ", examId='" + examId + '\'' +

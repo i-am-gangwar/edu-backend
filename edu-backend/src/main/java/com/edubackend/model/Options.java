@@ -1,4 +1,4 @@
-package com.edu_backend.model;
+package com.edubackend.model;
 
 import lombok.Data;
 import lombok.ToString;
@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Id;
 public class Options {
 
     @Id
-    private String ObjectId;
+    private String objectId;
     private String text;
     private boolean isCorrect;
 

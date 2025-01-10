@@ -1,6 +1,6 @@
-package com.edu_backend.model.QuizAnanlysis;
+package com.edubackend.model.quizananlysis;
 
-import com.edu_backend.model.QuizAnanlysis.dataAggregator.DataAggregatorInt;
+import com.edubackend.model.quizananlysis.dataaggregator.DataAggregatorInt;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

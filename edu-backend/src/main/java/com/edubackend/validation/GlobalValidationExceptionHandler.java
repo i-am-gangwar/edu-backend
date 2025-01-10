@@ -1,4 +1,4 @@
-package com.edu_backend.validation;
+package com.edubackend.validation;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,11 +16,8 @@ public class GlobalValidationExceptionHandler {
 
     // Handle validation exceptions
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        log.error("Validation error: {}", ex.getBindingResult().toString());
+    public ResponseEntity<ApiErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
-
-
         for (FieldError error : ex.getBindingResult().getFieldErrors()) {   // Process field-level validation errors
             errors.put(error.getField(), error.getDefaultMessage());
         }

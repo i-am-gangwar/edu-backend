@@ -1,9 +1,8 @@
-package com.edu_backend.repository;
+package com.edubackend.repository;
 
-import com.edu_backend.model.QuizResults.QuizResults;
+import com.edubackend.model.quizresults.QuizResults;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-import java.util.Optional;
 
 @Repository
 public interface QuizAttemptResultRepository extends MongoRepository<QuizResults,String> {

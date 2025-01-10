@@ -1,6 +1,6 @@
-package com.edu_backend.repository;
+package com.edubackend.repository;
 
-import com.edu_backend.model.QuizAttempts.QuizAttempts;
+import com.edubackend.model.quizattempts.QuizAttempts;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,21 +1,24 @@
-package com.edu_backend.mongo;
+package com.edubackend.mongo;
 
-import com.edu_backend.model.QuizAttempts.QuizSet;
-import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
-import com.edu_backend.model.QuizAttempts.QuizAttempts;
+import com.edubackend.model.quizattempts.QuizSet;
+import com.edubackend.model.quizattempts.QuizSetAttempt;
+import com.edubackend.model.quizattempts.QuizAttempts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 public class MongoService implements MongoQueryUtil{
 
-     @Autowired
-     MongoTemplate mongoTemplate;
+
+   private final  MongoTemplate mongoTemplate;
+
+    @Autowired
+    public MongoService(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
 
     @Override
     public Query createQuery(String userId, String quizSetId) {
@@ -68,7 +71,6 @@ public class MongoService implements MongoQueryUtil{
         Query q = createQuery(userId,quizSetId);
         QuizAttempts quizAttempts = mongoTemplate.findOne(q, QuizAttempts.class);
         // If the quizAttempt is found, loop through quizSets to find the quizSetAttempt
-        System.out.println("query: "+q);
         if (quizAttempts != null) {
             for (QuizSet quizSet : quizAttempts.getQuizSets()) {
                     if (quizSet.getQuizSetId().equals(quizSetId))

@@ -1,4 +1,4 @@
-package com.edu_backend.model.QuizAnanlysis.dataAggregator;
+package com.edubackend.model.quizananlysis.dataaggregator;
 
 import lombok.Getter;
 

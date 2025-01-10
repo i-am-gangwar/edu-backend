@@ -1,4 +1,4 @@
-package com.edu_backend.model.QuizAttempts;
+package com.edubackend.model.quizattempts;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -26,7 +26,7 @@ public class QuizSetAttempt {
     private String totalTimeTakenToAttempt;
 
     @NotEmpty(message = "Quiz Set Attempt Map cannot be empty")
-    private Map<String, List<String>> quizSetAttempt = new HashMap<>();
+    private Map<String, List<String>> setAttempt = new HashMap<>();
 
     // Constructor to auto-generate quizAttemptId if not provided
     public QuizSetAttempt() {

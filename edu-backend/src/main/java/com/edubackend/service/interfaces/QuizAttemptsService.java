@@ -1,7 +1,4 @@
-package com.edubackend.service.Interface;
-
-import java.util.List;
+package com.edubackend.service.interfaces;
 
 public interface QuizAttemptsService {
-    List<?> getAllResultsOfUser();
 }

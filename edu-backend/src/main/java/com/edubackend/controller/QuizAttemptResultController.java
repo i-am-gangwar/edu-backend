@@ -1,30 +1,31 @@
-package com.edu_backend.controller;
+package com.edubackend.controller;
 
-import com.edu_backend.model.QuizAttempts.QuizAttempts;
-import com.edu_backend.model.QuizAttempts.QuizSetAttempt;
-import com.edu_backend.model.QuizResults.QuizResults;
-import com.edu_backend.model.QuizResults.QuizSetAttemptResult;
-import com.edu_backend.mongo.MongoService;
-import com.edu_backend.service.QuizAttemptResultServiceImpl;
+import com.edubackend.model.quizattempts.QuizSetAttempt;
+import com.edubackend.model.quizresults.QuizResults;
+import com.edubackend.model.quizresults.QuizSetAttemptResult;
+import com.edubackend.mongo.MongoService;
+import com.edubackend.service.QuizAttemptResultServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
-
 @RestController
 @RequestMapping("/quizAttemptResult")
 public class QuizAttemptResultController {
 
-    @Autowired
-    QuizAttemptResultServiceImpl quizAttemptResultService;
 
-    @Autowired
+    QuizAttemptResultServiceImpl quizAttemptResultService;
     MongoService mongoService;
 
+    @Autowired
+    public QuizAttemptResultController(QuizAttemptResultServiceImpl quizAttemptResultService, MongoService mongoService) {
+        this.quizAttemptResultService = quizAttemptResultService;
+        this.mongoService = mongoService;
+    }
+
     @PostMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
-    public ResponseEntity<?> saveQuizAttemptResult(
+    public ResponseEntity<String> saveQuizAttemptResult(
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @PathVariable String quizSetAttemptId) {
