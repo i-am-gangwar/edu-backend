@@ -19,6 +19,9 @@
 	<properties>
 		<java.version>17</java.version> <!-- Java version -->
 		<spring-ai.version>1.0.0-M4</spring-ai.version>
+		<sonar.organization>edubackend</sonar.organization>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+
 	</properties>
 
 	<dependencies>
@@ -40,6 +43,11 @@
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+			<version>3.1.3</version>
+		</dependency>
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -47,6 +55,7 @@
 			<version>1.18.28</version> <!-- Latest Lombok version -->
 			<scope>provided</scope>
 		</dependency>
+
 
 		<!-- Spring Boot Test -->
 		<dependency>
@@ -62,6 +71,18 @@
 <!--			<scope>test</scope>-->
 <!--		</dependency>-->
 
+		<!-- Spring Boot Starter Validation -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
+		<!-- Bean Validation API -->
+		<dependency>
+		<groupId>jakarta.validation</groupId>
+		<artifactId>jakarta.validation-api</artifactId>
+		<version>3.0.2</version> <!-- Latest stable version -->
+		</dependency>
 	</dependencies>
 
 	<dependencyManagement>
@@ -101,6 +122,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+
 		</plugins>
 	</build>
 
