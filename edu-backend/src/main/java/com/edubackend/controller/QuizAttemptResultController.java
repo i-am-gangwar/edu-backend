@@ -25,7 +25,7 @@ public class QuizAttemptResultController {
     }
 
     @PostMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
-    public ResponseEntity<String> saveQuizAttemptResult(
+    public ResponseEntity<?> saveQuizAttemptResult(
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @PathVariable String quizSetAttemptId) {

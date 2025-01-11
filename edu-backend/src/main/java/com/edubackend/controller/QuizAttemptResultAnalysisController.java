@@ -29,21 +29,21 @@ public class QuizAttemptResultAnalysisController {
     }
 
     @PostMapping("/{userId}")
-    public ResponseEntity<String> saveResultAnalysis(@PathVariable String userId) {
+    public ResponseEntity<?> saveResultAnalysis(@PathVariable String userId) {
         QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
         if (userResult != null) {
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             if (resultsAnalysis == null) {
                 ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysis(userResult);
                 if (createdAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(createdAnalysis.toString());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(createdAnalysis);
                 else
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do create analysis Pls try again! userId: "+userId);
             }
             else{
                 ResultsAnalysis updateAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysis(userResult, resultsAnalysis);
                 if (updateAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(updateAnalysis.toString());
+                    return ResponseEntity.status(HttpStatus.CREATED).body(updateAnalysis);
                 else
                     return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do update analysis Pls try again! userId: "+userId);
             }
@@ -56,11 +56,11 @@ public class QuizAttemptResultAnalysisController {
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<String> getresultAnalysis(@PathVariable String userId) {
+    public ResponseEntity<?> getresultAnalysis(@PathVariable String userId) {
         try {
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             if (resultsAnalysis != null)
-                return ResponseEntity.status(HttpStatus.FOUND).body(resultsAnalysis.toString());
+                return ResponseEntity.status(HttpStatus.FOUND).body(resultsAnalysis);
             else
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No UserID: %s found to calculate results analysis in database!" + userId);
         } catch (Exception ex) {
