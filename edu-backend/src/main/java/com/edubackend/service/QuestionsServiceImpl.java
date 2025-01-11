@@ -11,12 +11,14 @@ import java.util.List;
 @Service
 public class QuestionsServiceImpl implements QuestionsService {
 
-    private final QuestionsRepository questionsRepository;
-
     @Autowired
-    public QuestionsServiceImpl(QuestionsRepository questionsRepository) {
-        this.questionsRepository = questionsRepository;
-    }
+    QuestionsRepository questionsRepository;
+
+
+//    public QuestionsServiceImpl(QuestionsRepository questionsRepository) {
+//        this.questionsRepository = questionsRepository;
+//    }
+
 
     @Override
     public List<Questions> getAllQuestions(){

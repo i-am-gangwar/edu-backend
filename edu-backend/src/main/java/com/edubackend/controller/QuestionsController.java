@@ -2,6 +2,7 @@ package com.edubackend.controller;
 
 import com.edubackend.model.Questions;
 import com.edubackend.service.QuestionsServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ public class QuestionsController {
 
   private final  QuestionsServiceImpl questionsServiceimpl;
 
+    @Autowired
     public QuestionsController(QuestionsServiceImpl questionsServiceimpl) {
         this.questionsServiceimpl = questionsServiceimpl;
     }
