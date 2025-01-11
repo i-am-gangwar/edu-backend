@@ -34,7 +34,10 @@ jobs:
       # Navigate to the subdirectory containing the pom.xml file
       - name: Build with Maven
         working-directory: ./edu-backend
-        run: mvn -B package --file pom.xml
+        run: mvn clean package
+        env:
+            MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      #  run: mvn -B package --file pom.xml
 
       # Update the dependency graph (Optional)
       - name: Update dependency graph
