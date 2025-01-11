@@ -52,19 +52,22 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
     public QuizAttempts addQuizAttempt(String userId, String quizSetId, QuizSetAttempt newAttempt){
 
         QuizAttempts optionalResults  =  quizAttemptsRepository.findByUserId(userId);
-        newAttempt.setDate(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
+        QuizSetAttempt setAttempt = new QuizSetAttempt();
+        setAttempt.setDate(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
+        setAttempt.setTotalTimeTakenToAttempt(newAttempt.getTotalTimeTakenToAttempt());
+        setAttempt.setSetAttempt(newAttempt.getSetAttempt());
 
         if (optionalResults!=null) {
             Optional<QuizSet> quizSets = optionalResults.getQuizSets().stream()
                     .filter(qs -> qs.getQuizSetId().equals(quizSetId)).findFirst();
 
             if (quizSets.isPresent())
-               quizSets.get().getQuizSetAttempts().add(newAttempt);
+               quizSets.get().getQuizSetAttempts().add(setAttempt);
             else
-                optionalResults.getQuizSets().add(createQuizSetAttempt(quizSetId,newAttempt));
+                optionalResults.getQuizSets().add(createQuizSetAttempt(quizSetId,setAttempt));
         }
         else
-            optionalResults = createQuizAttempt(userId,quizSetId,newAttempt);
+            optionalResults = createQuizAttempt(userId,quizSetId,setAttempt);
         return quizAttemptsRepository.save(optionalResults);
 
     }

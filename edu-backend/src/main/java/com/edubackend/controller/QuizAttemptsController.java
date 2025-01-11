@@ -102,12 +102,12 @@ public class QuizAttemptsController {
     public ResponseEntity<?> getResultsByUserIdAndQuizSetId(
             @PathVariable String userId,
             @PathVariable String quizSetId) {
-
           try {
-                QuizSet results =  mongoService.findQuizSet(userId, quizSetId);
-
-              if (results!=null)
+                QuizSet results = quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
+              if (results!=null && !results.getQuizSetAttempts().isEmpty()) {
+                  results.setQuizSetId(quizSetId);
                   return ResponseEntity.ok(results);
+              }
               else
                   return ResponseEntity.status(HttpStatus.NOT_FOUND)
                           .body("User quizSet is not there in database userId: "+ userId+ ", quizSet:"+quizSetId);
