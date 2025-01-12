@@ -12,8 +12,8 @@ public interface QuizAttemptResultRepository extends MongoRepository<QuizResults
     QuizResults findByUserId(String userId);
     @Aggregation(pipeline = {
             "{ '$match': { 'userId': ?0 } }",
-            "{ '$project': { 'quizSetResult': { '$filter': { 'input': '$quizSetResult', 'as': 'quizSetResult', 'cond': { '$eq': ['$$quizSetResult.quizSetId', ?1] } } } } }",
-            "{ '$project': { 'quizSetAttemptResults': { '$arrayElemAt': ['$quizSetResult.quizSetAttemptResults', 0] }, '_id': 0 } }"
+            "{ '$project': { 'quizSetResults': { '$filter': { 'input': '$quizSetResults', 'as': 'quizSetResult', 'cond': { '$eq': ['$$quizSetResult.quizSetId', ?1] } } } } }",
+            "{ '$project': { 'quizSetAttemptResults': { '$arrayElemAt': ['$quizSetResults.quizSetAttemptResults', 0] }, '_id': 0 } }"
     })
     QuizSetResult findQuizSetAttemptResultsByUserIdAndQuizSetId(String userId, String quizSetId);
 }

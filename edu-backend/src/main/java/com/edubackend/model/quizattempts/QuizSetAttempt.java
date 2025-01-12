@@ -17,7 +17,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class QuizSetAttempt {
 
-    @Id @NonNull @NotBlank(message = "ID cannot be blank")
+    @NonNull @NotBlank(message = "ID cannot be blank")
     private String quizSetAttemptId;
 
     private String date;

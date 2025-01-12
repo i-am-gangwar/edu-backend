@@ -1,12 +1,8 @@
 package com.edubackend.controller;
 
-import com.edubackend.model.quizattempts.QuizAttempts;
-import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
-import com.edubackend.repository.QuizAttemptResultRepository;
-import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.QuizAttemptResultServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
@@ -19,15 +15,12 @@ import org.springframework.web.bind.annotation.*;
 public class QuizAttemptResultController {
 
     private final QuizAttemptResultServiceImpl quizAttemptResultService;
-    private final  QuizAttemptsRepository quizAttemptsRepository;
-
 
 
     @Autowired
-    public QuizAttemptResultController(QuizAttemptResultServiceImpl quizAttemptResultService,
-                                       QuizAttemptsRepository quizAttemptsRepository) {
+    public QuizAttemptResultController(QuizAttemptResultServiceImpl quizAttemptResultService) {
         this.quizAttemptResultService = quizAttemptResultService;
-        this.quizAttemptsRepository =quizAttemptsRepository;
+
 
     }
 
@@ -46,6 +39,21 @@ public class QuizAttemptResultController {
        catch (Exception e){
            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again.");
        }
+    }
+
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> saveAllQuizAttemptResult(
+            @PathVariable String userId) {
+        try{
+            QuizResults result =  quizAttemptResultService.saveAllQuizAttemptResult(userId);
+            if (result!=null)
+                return  ResponseEntity.status(HttpStatus.CREATED).body("Quiz Attempt Result saved");
+            else
+                return  ResponseEntity.status(HttpStatus.NOT_FOUND).body("Quiz Attempt Result not saved\n"+"UserId: "+ userId);
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again.");
+        }
     }
 
 

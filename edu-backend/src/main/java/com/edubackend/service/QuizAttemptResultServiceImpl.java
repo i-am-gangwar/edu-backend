@@ -1,6 +1,8 @@
 package com.edubackend.service;
 
 import com.edubackend.dto.QuestionDTO;
+import com.edubackend.model.quizattempts.QuizAttempts;
+import com.edubackend.model.quizattempts.QuizSet;
 import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
@@ -17,17 +19,20 @@ import java.util.*;
 public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
 
-  private final   QuizAttemptResultRepository quizAttemptResultRepository;
+  private final QuizAttemptResultRepository quizAttemptResultRepository;
   private final QuestionService questionService;
   private final QuizAttemptsServiceImpl quizAttemptsService;
+  private final QuizAttemptsRepository quizAttemptsRepository;
 
     @Autowired
     public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository,
                                         QuestionService questionService,
-                                        QuizAttemptsServiceImpl quizAttemptsService) {
+                                        QuizAttemptsServiceImpl quizAttemptsService,
+                                        QuizAttemptsRepository quizAttemptsRepository) {
         this.quizAttemptResultRepository = quizAttemptResultRepository;
         this.questionService = questionService;
         this.quizAttemptsService = quizAttemptsService;
+        this.quizAttemptsRepository = quizAttemptsRepository;
 
     }
 
@@ -37,7 +42,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         QuizSetResult newResult = new QuizSetResult();
         newResult.setQuizSetId(quizSetId);
         newResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizResult)));
-        quizSetAttemptResult.setQuizSetResult(new ArrayList<>(List.of(newResult)));
+        quizSetAttemptResult.setQuizSetResults(new ArrayList<>(List.of(newResult)));
         return quizSetAttemptResult;
     }
 
@@ -58,19 +63,47 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
 
         if (quizResults!=null) {
-            Optional<QuizSetResult> quizSetResult = quizResults.getQuizSetResult().stream()
+            Optional<QuizSetResult> quizSetResult = quizResults.getQuizSetResults().stream()
                     .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
 
             if (quizSetResult.isPresent())
                    quizSetResult.get().getQuizSetAttemptResults().add(quizSetAttemptResult);
             else
-                quizResults.getQuizSetResult().add(createQuizSetResult(quizSetId,quizSetAttemptResult));
+                quizResults.getQuizSetResults().add(createQuizSetResult(quizSetId,quizSetAttemptResult));
         }
         else
             quizResults = createQuizAttemptResult(userId,quizSetId,quizSetAttemptResult);
         quizAttemptResultRepository.save(quizResults);
         return quizResults;
     }
+
+
+    @Transactional
+    public QuizResults saveAllQuizAttemptResult(String userId) {
+
+        QuizAttempts quizAttempts = quizAttemptsRepository.findByUserId(userId);
+        QuizResults quizResults = new QuizResults();
+        if (quizAttempts!=null){
+            quizResults.setUserId(userId);
+            for(QuizSet quizSet : quizAttempts.getQuizSets()) {
+                QuizSetResult quizSetResult = new QuizSetResult();
+                quizSetResult.setQuizSetId(quizSet.getQuizSetId());
+
+                for (QuizSetAttempt quizSetAttempt : quizSet.getQuizSetAttempts()) {
+                    QuizSetAttemptResult quizSetAttemptResult = calculateResultOfQuizAttempt(quizSetAttempt.getQuizSetAttemptId(), quizSetAttempt);
+                    quizSetResult.getQuizSetAttemptResults().add(quizSetAttemptResult);
+                }
+                quizResults.getQuizSetResults().add(quizSetResult);
+            }
+            quizAttemptResultRepository.save(quizResults);
+            return quizResults;
+        }
+        else
+           return quizResults;
+
+    }
+
+
 
 
 

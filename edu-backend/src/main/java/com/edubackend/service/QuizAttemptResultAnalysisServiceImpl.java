@@ -55,7 +55,7 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
         ResultsAnalysis resultsAnalysis = new ResultsAnalysis();
         resultsAnalysis.setUserId(userResult.getUserId());
         OverallPerformance overAllper = new OverallPerformance();
-        List<QuizSetResult> quizSetResult = userResult.getQuizSetResult();
+        List<QuizSetResult> quizSetResult = userResult.getQuizSetResults();
 
         for(QuizSetResult qzSet: quizSetResult){
             for (QuizSetAttemptResult attemptResult: qzSet.getQuizSetAttemptResults())
