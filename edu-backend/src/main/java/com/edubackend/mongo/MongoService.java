@@ -80,39 +80,6 @@ public class MongoService implements MongoQueryUtil{
         return null;
     }
 
-    // Method to find a QuizSet by userId and quizSetId
-    public QuizSetResult findQuizSetResults(String userId, String quizSetId) {
-        Query q = createQuery(userId,quizSetId);
-        System.out.println(q);
-        QuizResults quizResult = mongoTemplate.findOne(q, QuizResults.class);
-
-        // If the quizAttempt is found, loop through quizSets to find the quizSetAttempt
-        if ( quizResult!= null) {
-            for (QuizSetResult qRessult : quizResult.getQuizSetResult()) {
-                if (qRessult.getQuizSetId().equals(quizSetId))
-                    return qRessult; // Return found quizSetAttemptResults
-            }
-        }
-        return null; // Return empty if not found
-    }
-
-    // Method to find a QuizSetAttempt by userId, quizSetId, and quizSetAttemptId
-    public QuizSetAttemptResult findQuizSetAttemptResult(String userId, String quizSetId, String quizSetAttemptId) {
-        Query q = createQuery(userId,quizSetId,quizSetAttemptId);
-        QuizResults quizResults = mongoTemplate.findOne(q, QuizResults.class);
-        if (quizResults != null) {
-            for (QuizSetResult quizSet : quizResults.getQuizSetResult()) {
-                for (QuizSetAttemptResult quizSetAttemptResult : quizSet.getQuizSetAttemptResults()) {
-                    if (quizSetAttemptResult.getQuizSetAttemptId().equals(quizSetAttemptId)) {
-                        return quizSetAttemptResult; // Return found quizSetAttempt
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-
 
 
 

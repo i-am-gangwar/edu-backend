@@ -1,13 +1,15 @@
 package com.edubackend.controller;
 
+import com.edubackend.model.quizattempts.QuizAttempts;
 import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
-import com.edubackend.mongo.MongoService;
 import com.edubackend.repository.QuizAttemptResultRepository;
+import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.QuizAttemptResultServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,18 +18,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/quizAttemptResult")
 public class QuizAttemptResultController {
 
+    private final QuizAttemptResultServiceImpl quizAttemptResultService;
+    private final  QuizAttemptsRepository quizAttemptsRepository;
 
-   private final QuizAttemptResultServiceImpl quizAttemptResultService;
-    private final MongoService mongoService;
-    private final QuizAttemptResultRepository quizAttemptResultRepository;
+
 
     @Autowired
     public QuizAttemptResultController(QuizAttemptResultServiceImpl quizAttemptResultService,
-                                       MongoService mongoService,
-                                       QuizAttemptResultRepository quizAttemptResultRepository) {
+                                       QuizAttemptsRepository quizAttemptsRepository) {
         this.quizAttemptResultService = quizAttemptResultService;
-        this.mongoService = mongoService;
-        this.quizAttemptResultRepository = quizAttemptResultRepository;
+        this.quizAttemptsRepository =quizAttemptsRepository;
+
     }
 
     @PostMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
@@ -35,11 +36,8 @@ public class QuizAttemptResultController {
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @PathVariable String quizSetAttemptId) {
-
        try{
-           QuizSetAttempt quizAttempt = mongoService.findQuizSetAttempt(userId, quizSetId, quizSetAttemptId);
-           QuizSetAttemptResult quizResultCalculated = quizAttemptResultService.calculateResultOfQuizAttempt(quizSetAttemptId, quizAttempt); // calculating result of attempted quiz
-           QuizResults result =  quizAttemptResultService.saveQuizAttemptResult(userId,quizSetId,quizResultCalculated);
+             QuizResults result =  quizAttemptResultService.saveQuizAttemptResult(userId,quizSetId,quizSetAttemptId);
            if (result!=null)
                return  ResponseEntity.status(HttpStatus.CREATED).body("Quiz Attempt Result saved");
            else
@@ -53,9 +51,9 @@ public class QuizAttemptResultController {
 
     // get result by user id
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getQuizAttemptsResult(@PathVariable String userId){
+    public ResponseEntity<?> getResultByUserId(@PathVariable String userId){
         try {
-            QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
+            QuizResults quizResults = quizAttemptResultService.getResultByUserId(userId);
 
             if (quizResults != null)
                 return ResponseEntity.ok()
@@ -77,44 +75,52 @@ public class QuizAttemptResultController {
     @GetMapping("/{userId}/{quizSetId}")
     public ResponseEntity<?> getQuizSetsResult(@PathVariable String userId,@PathVariable String quizSetId){
         try {
-            QuizSetResult quizSetResults = mongoService.findQuizSetResults(userId,quizSetId);
-            if (quizSetResults!=null)
-                return ResponseEntity.ok(quizSetResults);
+            QuizSetResult results = quizAttemptResultService.getResultByUserIdAndQuizSetId(userId,quizSetId);
+            if (results!=null && !results.getQuizSetAttemptResults().isEmpty()) {
+                results.setQuizSetId(quizSetId);
+                return ResponseEntity.ok(results);
+            }
             else
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User quizSet is not there in database userId: "+ userId+ ", quizSet:"+quizSetId);
+                        .body("User quizSet is not there in database userId: or SetAttempts are empty"+ userId+ ", quizSet:"+quizSetId);
+
+        }
+        catch (DataAccessResourceFailureException e){
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Collection not found or database unavailable. Please initialize the collection.");
         }
         catch (Exception e){
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .body("Not found! "+e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again."+e);
         }
     }
 
 
-    @GetMapping("/{userId}/{quizSetId}/{attemptId}")
-    public ResponseEntity<?> getQuizSetAttemptResult(@PathVariable String userId,@PathVariable String quizSetId,
-                                                 @PathVariable String quizSetAttemptId) {
+    @GetMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
+    public ResponseEntity<?> getQuizSetAttemptResult(
+            @PathVariable String userId
+            ,@PathVariable String quizSetId,
+            @PathVariable String quizSetAttemptId) {
+
         try {
-            QuizSetAttemptResult quizSetAttemptResult = mongoService.findQuizSetAttemptResult(userId, quizSetId, quizSetAttemptId);
-            if (quizSetAttemptResult != null)
-                return ResponseEntity.ok(quizSetAttemptResult);
+            QuizSetAttemptResult setAttemptResult =
+                    quizAttemptResultService.getResultByUserIdAndQuizSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
+
+            if (setAttemptResult!=null) {
+                return ResponseEntity.ok(setAttemptResult);
+            }
             else
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("User quizSetAttemptResult is not there in database userId: " + userId + ", quizSet:" + quizSetId
-                                + ", quizSetAttemptId:" + quizSetAttemptId);
+                        .body("User quizSet is not there in database userId: or SetAttempts are empty"+ userId+ ", quizSet:"+quizSetId);
 
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .body("Not found! " + e);
+        }
+        catch (DataAccessResourceFailureException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("Collection not found or database unavailable. Please initialize the collection.");
+        }
+        catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unable to get details, try again."+e);
         }
     }
-
-    // get result by user id and quiz set id
-    // get result by user id and quiz set id and quiz attempt id
-
-    // delete by user id
-    // delete by by user id and quiz set id and quiz attempt id
 
 
 

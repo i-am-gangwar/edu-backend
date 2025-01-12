@@ -6,6 +6,7 @@ import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
 import com.edubackend.repository.QuizAttemptResultRepository;
+import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.interfaces.QuizAttemptResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,16 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
   private final   QuizAttemptResultRepository quizAttemptResultRepository;
   private final QuestionService questionService;
+  private final QuizAttemptsServiceImpl quizAttemptsService;
 
     @Autowired
-    public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository, QuestionService questionService) {
+    public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository,
+                                        QuestionService questionService,
+                                        QuizAttemptsServiceImpl quizAttemptsService) {
         this.quizAttemptResultRepository = quizAttemptResultRepository;
         this.questionService = questionService;
+        this.quizAttemptsService = quizAttemptsService;
+
     }
 
     public QuizResults createQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult){
@@ -46,24 +52,24 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
     @Override
     @Transactional
-    public QuizResults saveQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult ) {
+    public QuizResults saveQuizAttemptResult(String userId, String quizSetId, String quizSetAttemptId) {
+        QuizSetAttempt quizSetAttempt =  quizAttemptsService.getResultByUserIdAndSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
+        QuizSetAttemptResult quizSetAttemptResult = calculateResultOfQuizAttempt(quizSetAttemptId,quizSetAttempt);
+        QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
 
-        QuizResults quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId);
-
-        if (quizSetAttemptResult!=null) {
-            Optional<QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
+        if (quizResults!=null) {
+            Optional<QuizSetResult> quizSetResult = quizResults.getQuizSetResult().stream()
                     .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
 
             if (quizSetResult.isPresent())
-                   quizSetResult.get().getQuizSetAttemptResults().add(quizResult);
+                   quizSetResult.get().getQuizSetAttemptResults().add(quizSetAttemptResult);
             else
-                quizSetAttemptResult.getQuizSetResult().add(createQuizSetResult(quizSetId,quizResult));
+                quizResults.getQuizSetResult().add(createQuizSetResult(quizSetId,quizSetAttemptResult));
         }
         else
-            quizSetAttemptResult = createQuizAttemptResult(userId,quizSetId,quizResult);
-
-        quizAttemptResultRepository.save(quizSetAttemptResult);
-        return quizSetAttemptResult;
+            quizResults = createQuizAttemptResult(userId,quizSetId,quizSetAttemptResult);
+        quizAttemptResultRepository.save(quizResults);
+        return quizResults;
     }
 
 
@@ -145,5 +151,31 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             throw new RuntimeException("Result not calculated due to an error", e);
         }
     }
+
+
+
+
+    public QuizResults getResultByUserId(String userId){
+        return quizAttemptResultRepository.findByUserId(userId);
+    }
+
+    public QuizSetResult getResultByUserIdAndQuizSetId(String userId, String quizSetId){
+        return quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
+    }
+
+
+    public QuizSetAttemptResult getResultByUserIdAndQuizSetIdAndSetAttemptId(String userId, String quizSetId, String quizSetAttemptId) {
+        QuizSetResult results = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId, quizSetId);
+        try {
+            return results.getQuizSetAttemptResults().stream()
+                    .filter(qs -> qs.getQuizSetAttemptId().equals(quizSetAttemptId)).findFirst().get();
+        } catch (Exception e) {
+            return null;
+
+        }
+
+    }
+
+
 }
 

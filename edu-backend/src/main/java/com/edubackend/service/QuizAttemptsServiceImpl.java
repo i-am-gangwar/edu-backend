@@ -71,4 +71,19 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
         return quizAttemptsRepository.save(optionalResults);
 
     }
+
+    public QuizAttempts getResultByUserId(String userId) {
+       return quizAttemptsRepository.findByUserId(userId);
+    }
+
+    public QuizSet getResultByUserIdAndSetId(String userId,String quizSetId) {
+        return quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
+    }
+
+    public QuizSetAttempt getResultByUserIdAndSetIdAndSetAttemptId(String userId, String quizSetId, String setAttemptId) {
+        QuizSet results =  quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
+        Optional<QuizSetAttempt> quizSetAttempt = results.getQuizSetAttempts().stream()
+                .filter(qs -> qs.getQuizSetAttemptId().equals(setAttemptId)).findFirst();
+        return quizSetAttempt.get();
+    }
 }
