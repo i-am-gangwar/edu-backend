@@ -32,8 +32,12 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
 
     public ResultsAnalysis createAnalysisByUserId(String userId ){
+
         QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
         ResultsAnalysis resultsAnalysis = calculatePerformance(userResult);
+        ResultsAnalysis rsltanalysis = quizResultAnalysisRepository.findByUserId(userId);
+        if(rsltanalysis!=null)
+            resultsAnalysis.setId(rsltanalysis.getId());
         quizResultAnalysisRepository.save(resultsAnalysis);
         return resultsAnalysis;
     }

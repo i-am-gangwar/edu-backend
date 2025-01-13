@@ -24,15 +24,19 @@ public class LeaderboardServiceImpl {
         Leaderboard leaderboard = calculateLeaderboard();
         if (leaderboard!=null) {
             List<Leaderboard> l = leaderboardRepo.findAll();
-            if(l.isEmpty())
-            {
+            if(!l.isEmpty()) {
+                l.get(0).setOverallAccuracy(leaderboard.getOverallAccuracy());
+                l.get(0).setTotalQuizAttempted(leaderboard.getTotalQuizAttempted());
+                leaderboardRepo.save(l.get(0));
+                return true;
+            }
+            else {
                 leaderboardRepo.save(leaderboard);
                 return  true;
             }
         }
         else
            return false;
-        return false;
     }
 
 
@@ -46,6 +50,7 @@ public class LeaderboardServiceImpl {
 
 
     public Leaderboard calculateLeaderboard(){
+
         List<ResultsAnalysis> resultsAnalyses = quizResultAnalysisRepository.findAll();
         Leaderboard leaderboard = new Leaderboard();
         for (ResultsAnalysis analysis : resultsAnalyses){

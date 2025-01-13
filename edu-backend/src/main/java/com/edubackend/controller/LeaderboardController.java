@@ -18,6 +18,7 @@ import java.util.List;
 @RequestMapping("/leaderboard")
 public class LeaderboardController {
 
+
     @Autowired
     LeaderboardServiceImpl leaderboardService;
 

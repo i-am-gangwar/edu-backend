@@ -82,24 +82,27 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
     public QuizResults saveAllQuizAttemptResult(String userId) {
 
         QuizAttempts quizAttempts = quizAttemptsRepository.findByUserId(userId);
-        QuizResults quizResults = new QuizResults();
-        if (quizAttempts!=null){
-            quizResults.setUserId(userId);
+       QuizResults quizResults = new QuizResults();
+        if (quizAttempts!=null) {
+                quizResults.setUserId(userId);
             for(QuizSet quizSet : quizAttempts.getQuizSets()) {
                 QuizSetResult quizSetResult = new QuizSetResult();
                 quizSetResult.setQuizSetId(quizSet.getQuizSetId());
-
                 for (QuizSetAttempt quizSetAttempt : quizSet.getQuizSetAttempts()) {
                     QuizSetAttemptResult quizSetAttemptResult = calculateResultOfQuizAttempt(quizSetAttempt.getQuizSetAttemptId(), quizSetAttempt);
                     quizSetResult.getQuizSetAttemptResults().add(quizSetAttemptResult);
                 }
                 quizResults.getQuizSetResults().add(quizSetResult);
             }
+            QuizResults savedResults = quizAttemptResultRepository.findByUserId(userId);
+            if(savedResults!=null)
+                quizResults.setId(savedResults.getId());
+
             quizAttemptResultRepository.save(quizResults);
             return quizResults;
         }
         else
-           return quizResults;
+           return null;
 
     }
 
