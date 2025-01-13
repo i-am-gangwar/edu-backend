@@ -15,7 +15,6 @@ public class LeaderboardServiceImpl {
 
     @Autowired
     QuizResultAnalysisRepository quizResultAnalysisRepository;
-
     @Autowired
     LeaderboardRepo leaderboardRepo;
 
@@ -63,14 +62,13 @@ public class LeaderboardServiceImpl {
                     analysis.getUserId(),
                     analysis.getOverallPerformance().getMarksMatrics().getOverallAccuracy());
         }
-        leaderboard.setTotalQuizAttempted(shortmapOfInteger(leaderboard.getTotalQuizAttempted()));
-        leaderboard.setOverallAccuracy(shortmap(leaderboard.getOverallAccuracy()));
+        leaderboard.setTotalQuizAttempted(shortMapOfInteger(leaderboard.getTotalQuizAttempted()));
+        leaderboard.setOverallAccuracy(shortMap(leaderboard.getOverallAccuracy()));
        return leaderboard;
 
     }
 
-    public Map<String, Integer> shortmapOfInteger(Map<String,Integer> map){
-        // Sort the map by values in descending order
+    public Map<String, Integer> shortMapOfInteger(Map<String,Integer> map){
         Map<String, Integer> sortedMapDesc = map.entrySet()
                 .stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
@@ -81,14 +79,13 @@ public class LeaderboardServiceImpl {
                         LinkedHashMap::new // Maintain insertion order
                 ));
 
-        // Print the sorted map (descending)
         System.out.println("Sorted Map (Descending): " + sortedMapDesc);
         return  sortedMapDesc;
 
     }
 
-    public Map<String, Double> shortmap(Map<String,Double> map){
-        // Sort the map by values in descending order
+    public Map<String, Double> shortMap(Map<String,Double> map){
+
         Map<String, Double> sortedMapDesc = map.entrySet()
                 .stream()
                 .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
@@ -99,7 +96,7 @@ public class LeaderboardServiceImpl {
                         LinkedHashMap::new // Maintain insertion order
                 ));
 
-        // Print the sorted map (descending)
+
         System.out.println("Sorted Map (Descending): " + sortedMapDesc);
         return  sortedMapDesc;
 

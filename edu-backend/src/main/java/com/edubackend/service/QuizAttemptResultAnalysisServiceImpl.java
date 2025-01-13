@@ -1,5 +1,6 @@
 package com.edubackend.service;
 
+import com.edubackend.Exceptions.Exception.OperationFailedException;
 import com.edubackend.model.quizananlysis.OverallPerformance;
 import com.edubackend.model.quizananlysis.ResultsAnalysis;
 import com.edubackend.model.quizresults.QuizResults;
@@ -8,13 +9,16 @@ import com.edubackend.model.quizresults.QuizSetResult;
 import com.edubackend.repository.QuizAttemptResultRepository;
 import com.edubackend.repository.QuizResultAnalysisRepository;
 import com.edubackend.service.interfaces.QuizAttemptResultAnalysisService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 
 @Service
+@Slf4j
 public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAnalysisService {
 
   private final   QuizAttemptResultRepository  quizAttemptResultRepository;
@@ -32,30 +36,84 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
 
     public ResultsAnalysis createAnalysisByUserId(String userId ){
+        try {
 
-        QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
-        ResultsAnalysis resultsAnalysis = calculatePerformance(userResult);
-        ResultsAnalysis rsltanalysis = quizResultAnalysisRepository.findByUserId(userId);
-        if(rsltanalysis!=null)
-            resultsAnalysis.setId(rsltanalysis.getId());
-        quizResultAnalysisRepository.save(resultsAnalysis);
-        return resultsAnalysis;
+            QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
+            ResultsAnalysis resultsAnalysis = calculatePerformance(userResult);
+            ResultsAnalysis rsltanalysis = quizResultAnalysisRepository.findByUserId(userId);
+            if(rsltanalysis!=null)
+                resultsAnalysis.setId(rsltanalysis.getId());
+            quizResultAnalysisRepository.save(resultsAnalysis);
+            return resultsAnalysis;
+        }
+        catch (OperationFailedException e) {
+            log.warn("Operation failed: {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (DataAccessResourceFailureException e) {  // Handle missing collection or database access issues
+            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+            log.error(errorMessage, e);
+            throw new DataAccessResourceFailureException(errorMessage);
+
+        }
+        catch (Exception e) {
+            // Handle unexpected exceptions and log them for troubleshooting
+            String errorMessage = "An unexpected error occurred while creating quiz attempt.";
+            log.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
+
+
     }
 
 
     public ResultsAnalysis updateAnalysisSetAttemptId(String userId,String quizSetId, String quizSetAttemptId) {
-        ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-        QuizSetAttemptResult quizSetAttemptResult =  quizAttemptResultService.getResultByUserIdAndQuizSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
-        resultsAnalysis.setOverallPerformance(
-                calculateAttemptPerformance(resultsAnalysis.getOverallPerformance(),quizSetAttemptResult));
-        quizResultAnalysisRepository.save(resultsAnalysis);
-        return resultsAnalysis;
+
+        try{
+            ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
+            QuizSetAttemptResult quizSetAttemptResult =  quizAttemptResultService.getResultByUserIdAndQuizSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
+            if(quizSetAttemptResult==null)
+                throw new OperationFailedException("User data not found in db.");
+            if (resultsAnalysis!=null)
+                resultsAnalysis.setOverallPerformance(
+                    calculateAttemptPerformance(resultsAnalysis.getOverallPerformance(),quizSetAttemptResult));
+            else{
+                 resultsAnalysis =  new ResultsAnalysis();
+                resultsAnalysis.setUserId(userId);
+                OverallPerformance overAllper = new OverallPerformance();
+                resultsAnalysis.setOverallPerformance(calculateAttemptPerformance(
+                        resultsAnalysis.getOverallPerformance(),quizSetAttemptResult));
+            }
+            quizResultAnalysisRepository.save(resultsAnalysis);
+            return resultsAnalysis;
+
+        }
+        catch (OperationFailedException e) {
+            log.warn("Operation failed: {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (DataAccessResourceFailureException e) {  // Handle missing collection or database access issues
+            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+            log.error(errorMessage, e);
+            throw new DataAccessResourceFailureException(errorMessage);
+
+        }
+        catch (Exception e) {
+            // Handle unexpected exceptions and log them for troubleshooting
+            String errorMessage = "An unexpected error occurred while creating quiz attempt.";
+            log.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
+
+
+
     }
 
 
 
     @Transactional
     public ResultsAnalysis calculatePerformance(QuizResults userResult){
+
         ResultsAnalysis resultsAnalysis = new ResultsAnalysis();
         resultsAnalysis.setUserId(userResult.getUserId());
         OverallPerformance overAllper = new OverallPerformance();
