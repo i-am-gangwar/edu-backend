@@ -83,10 +83,11 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
         // set lowest
         overAllper.getMarksMatrics().setLowestScore(Math.min(overAllper.getMarksMatrics().getLowestScore(), attemptResult.getTotalAttemptedQuestions()));
         // average so far for correct out of total q in quiz
-        overAllper.getMarksMatrics().setAverageScore(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100 /overAllper.getMarksMatrics().getTotalQ().getTotal()));
+        overAllper.getMarksMatrics().setAverageScore(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100
+                /overAllper.getMarksMatrics().getTotalQ().getTotal()));
         // accuracy of total correct q out of total attempted
-        overAllper.getMarksMatrics().setOverallAccuracy(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100 /
-                overAllper.getMarksMatrics().getTotalAttemptedQ().getTotal()));
+        overAllper.getMarksMatrics().setOverallAccuracy(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100
+                / overAllper.getMarksMatrics().getTotalAttemptedQ().getTotal()));
         // subject score for correct q
         for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForCorrectAnswer().entrySet())
             overAllper.getSubjectMatrics().getSubjectScoresForCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
