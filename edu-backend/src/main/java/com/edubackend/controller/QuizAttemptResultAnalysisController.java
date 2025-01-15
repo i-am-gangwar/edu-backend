@@ -1,13 +1,14 @@
 package com.edubackend.controller;
 
 
-import com.edubackend.model.quizresults.QuizResults;
+
+import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.model.quizananlysis.ResultsAnalysis;
-import com.edubackend.repository.QuizAttemptResultRepository;
 import com.edubackend.repository.QuizResultAnalysisRepository;
 import com.edubackend.service.QuizAttemptResultAnalysisServiceImpl;
+import com.edubackend.utils.ApiResponse;
+import com.edubackend.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,56 +16,47 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/analytics")
 public class QuizAttemptResultAnalysisController {
 
-    QuizAttemptResultRepository quizAttemptResultRepository;
     QuizResultAnalysisRepository quizResultAnalysisRepository;
     QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl;
 
     @Autowired
-    public QuizAttemptResultAnalysisController(QuizAttemptResultRepository quizAttemptResultRepository,
-                                               QuizResultAnalysisRepository quizResultAnalysisRepository,
-                                               QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl) {
-        this.quizAttemptResultRepository = quizAttemptResultRepository;
+    public QuizAttemptResultAnalysisController(QuizResultAnalysisRepository quizResultAnalysisRepository,
+            QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl) {
         this.quizResultAnalysisRepository = quizResultAnalysisRepository;
         this.quizAttemptResultAnalysisServiceImpl = quizAttemptResultAnalysisServiceImpl;
     }
 
+
     @PostMapping("/{userId}")
-    public ResponseEntity<?> saveResultAnalysis(@PathVariable String userId) {
-        QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
-        if (userResult != null) {
-            ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-            if (resultsAnalysis == null) {
-                ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysis(userResult);
-                if (createdAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(createdAnalysis);
-                else
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do create analysis Pls try again! userId: "+userId);
-            }
-            else{
-                ResultsAnalysis updateAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysis(userResult, resultsAnalysis);
-                if (updateAnalysis != null)
-                    return ResponseEntity.status(HttpStatus.CREATED).body(updateAnalysis);
-                else
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Unable to do update analysis Pls try again! userId: "+userId);
-            }
-        }
-        else
-          return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("No UserID: %s found to calculate results analysis!",userId));
+    public ResponseEntity<ApiResponse<ResultsAnalysis>> saveResultAnalysis(@PathVariable String userId) {
+
+        ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(userId);
+        return ResponseUtil.success("Result analysis created", createdAnalysis);
     }
 
 
+    @PostMapping("/{userId}/{quizSetId}/{setAttemptId}")
+    public ResponseEntity<ApiResponse<ResultsAnalysis>> updateResultAnalysis(
+            @PathVariable String userId,
+            @PathVariable String quizSetId,
+            @PathVariable String setAttemptId) {
+
+        ResultsAnalysis updatedAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysisSetAttemptId(userId, quizSetId, setAttemptId);
+        return ResponseUtil.success("Result analysis updated", updatedAnalysis);
+
+    }
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getresultAnalysis(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<ResultsAnalysis>> getresultAnalysis(@PathVariable String userId) {
         try {
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             if (resultsAnalysis != null)
-                return ResponseEntity.status(HttpStatus.FOUND).body(resultsAnalysis);
+                return ResponseUtil.success("Result analysis data fetched successfully.", resultsAnalysis);
             else
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No UserID: %s found to calculate results analysis in database!" + userId);
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ex.getMessage());
+                throw new ResourceNotFoundException("No result analysis found for useId: " + userId);
+        } catch (Exception e) {
+            throw new RuntimeException("An unexpected error occurred while creating quiz attempt.", e);
         }
     }
 }

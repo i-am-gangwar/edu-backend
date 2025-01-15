@@ -1,40 +1,58 @@
 package com.edubackend.service;
 
+import com.edubackend.Exceptions.Exception.OperationFailedException;
+import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.dto.QuestionDTO;
+import com.edubackend.model.quizattempts.QuizAttempts;
+import com.edubackend.model.quizattempts.QuizSet;
 import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
 import com.edubackend.repository.QuizAttemptResultRepository;
+import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.interfaces.QuizAttemptResultService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Service
+@Slf4j
 public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
 
-  private final   QuizAttemptResultRepository quizAttemptResultRepository;
+  private final QuizAttemptResultRepository quizAttemptResultRepository;
   private final QuestionService questionService;
+  private final QuizAttemptsServiceImpl quizAttemptsService;
+  private final QuizAttemptsRepository quizAttemptsRepository;
 
     @Autowired
-    public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository, QuestionService questionService) {
+    public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository,
+                                        QuestionService questionService,
+                                        QuizAttemptsServiceImpl quizAttemptsService,
+                                        QuizAttemptsRepository quizAttemptsRepository) {
         this.quizAttemptResultRepository = quizAttemptResultRepository;
         this.questionService = questionService;
+        this.quizAttemptsService = quizAttemptsService;
+        this.quizAttemptsRepository = quizAttemptsRepository;
+
     }
 
-    public QuizResults createQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult){
+    @Override
+    public QuizResults createQuizResult(String userId, String quizSetId, QuizSetAttemptResult quizResult){
         QuizResults quizSetAttemptResult = new QuizResults();
         quizSetAttemptResult.setUserId(userId);
         QuizSetResult newResult = new QuizSetResult();
         newResult.setQuizSetId(quizSetId);
         newResult.setQuizSetAttemptResults(new ArrayList<>(List.of(quizResult)));
-        quizSetAttemptResult.setQuizSetResult(new ArrayList<>(List.of(newResult)));
+        quizSetAttemptResult.setQuizSetResults(new ArrayList<>(List.of(newResult)));
         return quizSetAttemptResult;
     }
 
+    @Override
     public QuizSetResult createQuizSetResult(String quizSetId,QuizSetAttemptResult quizSetAttemptResult){
         QuizSetResult newQuizSetResult = new QuizSetResult();
         newQuizSetResult.setQuizSetId(quizSetId);
@@ -44,27 +62,106 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
     }
 
 
+
     @Override
     @Transactional
-    public QuizResults saveQuizAttemptResult(String userId, String quizSetId, QuizSetAttemptResult quizResult ) {
+    public QuizSetAttemptResult saveQuizAttemptResult(String userId, String quizSetId, String quizSetAttemptId) {
 
-        QuizResults quizSetAttemptResult = quizAttemptResultRepository.findByUserId(userId);
+        try{
+            QuizSetAttempt quizSetAttempt =  quizAttemptsService.getResultByUserIdAndSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
+            QuizSetAttemptResult quizSetAttemptResult = calculateResultOfQuizAttempt(quizSetAttemptId,quizSetAttempt);
+            QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
 
-        if (quizSetAttemptResult!=null) {
-            Optional<QuizSetResult> quizSetResult = quizSetAttemptResult.getQuizSetResult().stream()
-                    .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
+            if (quizResults!=null) {
+                Optional<QuizSetResult> quizSetResult = quizResults.getQuizSetResults().stream()
+                        .filter(qsr -> qsr.getQuizSetId().equals(quizSetId)).findFirst();
 
-            if (quizSetResult.isPresent())
-                   quizSetResult.get().getQuizSetAttemptResults().add(quizResult);
+                if (quizSetResult.isPresent())
+                    quizSetResult.get().getQuizSetAttemptResults().add(quizSetAttemptResult);
+                else
+                    quizResults.getQuizSetResults().add(createQuizSetResult(quizSetId,quizSetAttemptResult));
+            }
             else
-                quizSetAttemptResult.getQuizSetResult().add(createQuizSetResult(quizSetId,quizResult));
-        }
-        else
-            quizSetAttemptResult = createQuizAttemptResult(userId,quizSetId,quizResult);
+                quizResults = createQuizResult(userId,quizSetId,quizSetAttemptResult);
 
-        quizAttemptResultRepository.save(quizSetAttemptResult);
-        return quizSetAttemptResult;
+            quizAttemptResultRepository.save(quizResults);
+
+            return quizSetAttemptResult;
+
+        }
+        catch (OperationFailedException e) {
+            log.warn("Operation failed: {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (DataAccessResourceFailureException e) {
+            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+            log.error(errorMessage, e);
+            throw new DataAccessResourceFailureException(errorMessage);
+
+        }
+        catch (Exception e) {
+            String errorMessage = "An unexpected error occurred while creating quiz attempt result. try again!";
+            log.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
+
+
+
     }
+
+
+    @Transactional
+    public QuizResults saveAllQuizAttemptResult(String userId) {
+
+        try{
+
+            QuizAttempts quizAttempts = quizAttemptsRepository.findByUserId(userId);
+            QuizResults quizResults = new QuizResults();
+
+            if (quizAttempts!=null) {
+                quizResults.setUserId(userId);
+                for(QuizSet quizSet : quizAttempts.getQuizSets()) {
+
+                    QuizSetResult quizSetResult = new QuizSetResult();
+                    quizSetResult.setQuizSetId(quizSet.getQuizSetId());
+
+                    for (QuizSetAttempt quizSetAttempt : quizSet.getQuizSetAttempts()) {
+                        QuizSetAttemptResult quizSetAttemptResult = calculateResultOfQuizAttempt(quizSetAttempt.getQuizSetAttemptId(), quizSetAttempt);
+                        quizSetResult.getQuizSetAttemptResults().add(quizSetAttemptResult);
+                    }
+                    quizResults.getQuizSetResults().add(quizSetResult);
+                }
+                QuizResults savedResults = quizAttemptResultRepository.findByUserId(userId);
+                if(savedResults!=null)
+                    quizResults.setId(savedResults.getId());
+
+                quizAttemptResultRepository.save(quizResults);
+                return quizResults;
+            }
+            else throw new NullPointerException("No quiz Attempts found for result calculation, userId: "+ userId);
+
+        }
+        catch (OperationFailedException e) {
+            log.warn("Operation failed: {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (DataAccessResourceFailureException e) {
+            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+            log.error(errorMessage, e);
+            throw new DataAccessResourceFailureException(errorMessage);
+
+        }
+        catch (Exception e) {
+            String errorMessage = "An unexpected error occurred while creating quiz attempt result. try again!";
+            log.error(errorMessage, e);
+            throw new RuntimeException(errorMessage, e);
+        }
+
+
+
+    }
+
+
 
 
 
@@ -145,5 +242,80 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
             throw new RuntimeException("Result not calculated due to an error", e);
         }
     }
+
+
+
+
+
+
+
+
+    public QuizResults getResultByUserId(String userId){
+        QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
+        return checkData(quizResults);
+
+    }
+
+    public QuizSetResult getResultByUserIdAndQuizSetId(String userId, String quizSetId){
+        QuizSetResult quizSetResult = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
+        if(quizSetResult.getQuizSetAttemptResults().isEmpty())
+            throw  new ResourceNotFoundException(String.format(
+                    "User Quiz Attempt Not Saved. userId: %s, quizSetId: %s",
+                    userId, quizSetId));
+        quizSetResult = checkData(quizSetResult);
+        quizSetResult.setQuizSetId(quizSetId);
+        return quizSetResult;
+    }
+
+
+    public QuizSetAttemptResult getResultByUserIdAndQuizSetIdAndSetAttemptId(String userId, String quizSetId, String quizSetAttemptId) throws Exception {
+        try {
+            QuizSetResult results = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId, quizSetId);
+            Optional<QuizSetAttemptResult> quizSetAttemptResult = results.getQuizSetAttemptResults().stream()
+                    .filter(qs -> qs.getQuizSetAttemptId().equals(quizSetAttemptId)).findFirst();
+            System.out.println(quizSetAttemptResult);
+            if (quizSetAttemptResult.isPresent())
+                return checkData(quizSetAttemptResult.get());
+            else
+                throw new ResourceNotFoundException(String.format(
+                        "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
+                        userId, quizSetId, quizSetAttemptId));
+        }
+        catch (ResourceNotFoundException ex){
+            throw new ResourceNotFoundException(String.format(
+                    "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
+                    userId, quizSetId, quizSetAttemptId));
+
+        }
+
+    }
+
+
+
+    public <T> T checkData(T result){
+
+        try {
+            if (result==null) {
+                throw new OperationFailedException(
+                        "User data is not found in db");
+            }
+            return result;
+        }
+        catch (OperationFailedException e) {
+            log.warn("Operation failed: {}", e.getMessage(), e);
+            throw e;
+        }
+        catch (DataAccessResourceFailureException e) {
+            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+            log.error(errorMessage, e);
+            throw new DataAccessResourceFailureException(errorMessage);
+        }
+        catch (ResourceNotFoundException ex){
+            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
+        }
+
+    }
+
+
 }
 

@@ -22,7 +22,7 @@ public class QuizResults {
 
     @NotNull(message = "Quiz sets Result cannot be null")
     @Size(min = 1, message = "There must be at least one quiz set Result")
-    private List<QuizSetResult> quizSetResult = new ArrayList<>();
+    private List<QuizSetResult> quizSetResults = new ArrayList<>();
 
 
 }
