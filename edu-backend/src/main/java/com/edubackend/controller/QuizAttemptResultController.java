@@ -47,7 +47,7 @@ public class QuizAttemptResultController {
 
     // get result by user id
     @GetMapping("/{userId}")
-    public ResponseEntity<?> getResultByUserId(@PathVariable String userId){
+    public ResponseEntity<ApiResponse<QuizResults>> getResultByUserId(@PathVariable String userId){
         QuizResults quizResults = quizAttemptResultService.getResultByUserId(userId);
       return ResponseUtil.success("Result data fetched successfully.",quizResults);
 
@@ -55,7 +55,7 @@ public class QuizAttemptResultController {
 
 
     @GetMapping("/{userId}/{quizSetId}")
-    public ResponseEntity<?> getQuizSetsResult(@PathVariable String userId,@PathVariable String quizSetId){
+    public ResponseEntity<ApiResponse<QuizSetResult>> getQuizSetsResult(@PathVariable String userId,@PathVariable String quizSetId){
             QuizSetResult results = quizAttemptResultService.getResultByUserIdAndQuizSetId(userId,quizSetId);
            return ResponseUtil.success("Result data fetched successfully.",results);
 
@@ -63,7 +63,7 @@ public class QuizAttemptResultController {
 
 
     @GetMapping("/{userId}/{quizSetId}/{quizSetAttemptId}")
-    public ResponseEntity<?> getQuizSetAttemptResult(
+    public ResponseEntity<ApiResponse<QuizSetAttemptResult>> getQuizSetAttemptResult(
             @PathVariable String userId
             ,@PathVariable String quizSetId,
             @PathVariable String quizSetAttemptId) throws Exception {

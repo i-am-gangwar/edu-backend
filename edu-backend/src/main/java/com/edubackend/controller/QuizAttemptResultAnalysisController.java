@@ -21,31 +21,28 @@ public class QuizAttemptResultAnalysisController {
 
     @Autowired
     public QuizAttemptResultAnalysisController(QuizResultAnalysisRepository quizResultAnalysisRepository,
-                                               QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl) {
+            QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl) {
         this.quizResultAnalysisRepository = quizResultAnalysisRepository;
         this.quizAttemptResultAnalysisServiceImpl = quizAttemptResultAnalysisServiceImpl;
     }
-
-
 
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponse<ResultsAnalysis>> saveResultAnalysis(@PathVariable String userId) {
 
         ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(userId);
-        return ResponseUtil.success("Result analysis created",createdAnalysis);
+        return ResponseUtil.success("Result analysis created", createdAnalysis);
     }
-
 
 
     @PostMapping("/{userId}/{quizSetId}/{setAttemptId}")
     public ResponseEntity<ApiResponse<ResultsAnalysis>> updateResultAnalysis(
             @PathVariable String userId,
             @PathVariable String quizSetId,
-            @PathVariable String setAttemptId){
+            @PathVariable String setAttemptId) {
 
-        ResultsAnalysis updatedAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysisSetAttemptId(userId,quizSetId,setAttemptId);
-        return ResponseUtil.success("Result analysis updated",updatedAnalysis);
+        ResultsAnalysis updatedAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysisSetAttemptId(userId, quizSetId, setAttemptId);
+        return ResponseUtil.success("Result analysis updated", updatedAnalysis);
 
     }
 
@@ -55,9 +52,9 @@ public class QuizAttemptResultAnalysisController {
         try {
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             if (resultsAnalysis != null)
-                return ResponseUtil.success("Result analysis data fetched successfully.",resultsAnalysis);
+                return ResponseUtil.success("Result analysis data fetched successfully.", resultsAnalysis);
             else
-                throw new ResourceNotFoundException("No result analysis found for useId: "+userId);
+                throw new ResourceNotFoundException("No result analysis found for useId: " + userId);
         } catch (Exception e) {
             throw new RuntimeException("An unexpected error occurred while creating quiz attempt.", e);
         }

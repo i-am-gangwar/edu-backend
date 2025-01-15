@@ -40,7 +40,7 @@ public class QuizAttemptsController {
 
 
     @GetMapping("/userId/{userId}")  // get all quiz attempt of user by user id
-    public ResponseEntity<?> getAllResultUser(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<QuizAttempts>> getAllResultUser(@PathVariable String userId) {
         QuizAttempts quizAttempts = quizAttemptService.getResultByUserId(userId);
         return ResponseUtil.success("data fetched successfully",quizAttempts);
     }
@@ -48,7 +48,7 @@ public class QuizAttemptsController {
 
         // get all attempt of any quizSet by quizSetId and UserID
     @GetMapping("/userId/{userId}/quizSetId/{quizSetId}")
-    public ResponseEntity<?> getResultsByUserIdAndQuizSetId(
+    public ResponseEntity<ApiResponse<QuizSet>> getResultsByUserIdAndQuizSetId(
             @PathVariable String userId,
             @PathVariable String quizSetId) {
 
@@ -57,7 +57,7 @@ public class QuizAttemptsController {
     }
 
     @GetMapping("/userId/{userId}/quizSetId/{quizSetId}/{setAttemptId}")
-    public ResponseEntity<?> getResultSetAttemptIdById(
+    public ResponseEntity<ApiResponse<QuizSetAttempt>> getResultBySetAttemptId(
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @PathVariable String setAttemptId)
