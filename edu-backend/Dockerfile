@@ -5,7 +5,7 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy the JAR file from the edu-backend folder to the container
-COPY edu-backend/edu-backend-0.0.1-SNAPSHOT.jar /app/edu-backend.jar
+COPY edu-backend-0.0.1-SNAPSHOT.jar /app/edu-backend.jar
 
 # Expose port 8080 for the Spring Boot application
 EXPOSE 8080
