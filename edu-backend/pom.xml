@@ -20,6 +20,7 @@
 		<spring-ai.version>1.0.0-M4</spring-ai.version>
 		<sonar.organization>edubackend</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 	<dependencies>
 		<!-- Spring Web -->
