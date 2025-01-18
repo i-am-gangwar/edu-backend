@@ -297,7 +297,7 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
         try {
             if (result==null) {
                 throw new OperationFailedException(
-                        "User data is not found in db");
+                        "User data is not found in db please enter valid details");
             }
             return result;
         }

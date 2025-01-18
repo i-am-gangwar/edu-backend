@@ -167,7 +167,7 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
         try {
             if (result==null) {
                 throw new OperationFailedException(
-                        "User data is not found in db");
+                        "User data is not found in db, enter valid userId");
             }
             return result;
         }

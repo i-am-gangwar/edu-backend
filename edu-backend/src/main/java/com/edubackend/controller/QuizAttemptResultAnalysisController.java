@@ -48,14 +48,17 @@ public class QuizAttemptResultAnalysisController {
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<ResultsAnalysis>> getresultAnalysis(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<ResultsAnalysis>> getResultAnalysis(@PathVariable String userId) {
         try {
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             if (resultsAnalysis != null)
                 return ResponseUtil.success("Result analysis data fetched successfully.", resultsAnalysis);
-            else
-                throw new ResourceNotFoundException("No result analysis found for useId: " + userId);
-        } catch (Exception e) {
+            else throw new ResourceNotFoundException("No result analysis found");
+        }
+        catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException("No result analysis found for useId: " + userId);
+        }
+        catch (Exception e) {
             throw new RuntimeException("An unexpected error occurred while creating quiz attempt.", e);
         }
     }
