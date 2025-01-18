@@ -29,10 +29,10 @@ public class LeaderboardController {
 
     @PostMapping
     public ResponseEntity<String> calculateLeaderboard(){
-        if(leaderboardService.saveLeaderboard())
-           return ResponseEntity.status(HttpStatus.CREATED).body("leaderboard calculated and saved!");
+        if(leaderboardService.createOrUpdateLeaderboard())
+           return ResponseEntity.status(HttpStatus.CREATED).body("leaderboard calculated/updated and saved!");
         else
-            throw new OperationFailedException("unable to process the request this time.");
+            throw new OperationFailedException("unable to create or update leaderboard the request this time.");
     }
 
     @GetMapping

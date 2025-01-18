@@ -20,9 +20,6 @@ public class Leaderboard {
     @Id
     @NonNull
     String id;
-    private Map<String,Integer> totalQuizAttempted = new HashMap<>();
-    private Map<String,Double> overallAccuracy = new HashMap<>();
-
-
+    private Map<String,Integer> score = new HashMap<>();
 }
 

@@ -19,13 +19,12 @@ public class LeaderboardServiceImpl {
     LeaderboardRepo leaderboardRepo;
 
 
-    public boolean saveLeaderboard(){
+    public boolean createOrUpdateLeaderboard(){
         Leaderboard leaderboard = calculateLeaderboard();
         if (leaderboard!=null) {
             List<Leaderboard> l = leaderboardRepo.findAll();
             if(!l.isEmpty()) {
-                l.get(0).setOverallAccuracy(leaderboard.getOverallAccuracy());
-                l.get(0).setTotalQuizAttempted(leaderboard.getTotalQuizAttempted());
+                l.get(0).setScore(leaderboard.getScore());
                 leaderboardRepo.save(l.get(0));
                 return true;
             }
@@ -52,18 +51,13 @@ public class LeaderboardServiceImpl {
 
         List<ResultsAnalysis> resultsAnalyses = quizResultAnalysisRepository.findAll();
         Leaderboard leaderboard = new Leaderboard();
-        for (ResultsAnalysis analysis : resultsAnalyses){
+        for (ResultsAnalysis analysis : resultsAnalyses) {
 
-            leaderboard.getTotalQuizAttempted().put(
+            leaderboard.getScore().put(
                     analysis.getUserId(),
-                    analysis.getOverallPerformance().getMarksMatrics().getTotalQuizSets().getTotal());
-
-            leaderboard.getOverallAccuracy().put(
-                    analysis.getUserId(),
-                    analysis.getOverallPerformance().getMarksMatrics().getOverallAccuracy());
+                    analysis.getOverallPerformance().getMarksMatrics().getTotalCorrectScore().getTotal());
         }
-        leaderboard.setTotalQuizAttempted(shortMapOfInteger(leaderboard.getTotalQuizAttempted()));
-        leaderboard.setOverallAccuracy(shortMap(leaderboard.getOverallAccuracy()));
+        leaderboard.setScore(shortMapOfInteger(leaderboard.getScore()));
        return leaderboard;
 
     }
@@ -83,24 +77,5 @@ public class LeaderboardServiceImpl {
         return  sortedMapDesc;
 
     }
-
-    public Map<String, Double> shortMap(Map<String,Double> map){
-
-        Map<String, Double> sortedMapDesc = map.entrySet()
-                .stream()
-                .sorted(Map.Entry.<String, Double>comparingByValue().reversed())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (e1, e2) -> e1, // In case of duplicate keys
-                        LinkedHashMap::new // Maintain insertion order
-                ));
-
-
-        System.out.println("Sorted Map (Descending): " + sortedMapDesc);
-        return  sortedMapDesc;
-
-    }
-
 
 }
