@@ -3,12 +3,27 @@ spring:
     mongodb:
       uri: ${MONGODB_URI}
       database: education_db
-      auto-index-creation: true
       ssl:
         enabled: false
-      #username:
-      #password
-      # kafka
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: rakeshgangwarjnv256@gmail.com
+    password: injm cftv mnwj hoxz
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            trust: smtp.gmail.com
+
+
+
+
+
+
 
   kafka:
     bootstrap-servers: "<aiven-kafka-broker-address>:9092"

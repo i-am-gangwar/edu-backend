@@ -60,7 +60,8 @@ public class SecurityConfig {
         // Specify allowed origins
         configuration.addAllowedOrigin("https://www.gsbyvishnusir.com");
         configuration.addAllowedOrigin("https://gsbyvishnusir.com"); // Allow production domain
-        configuration.addAllowedOrigin("http://localhost:5173"); // Allow local development environment
+        configuration.addAllowedOrigin("http://localhost:5173");
+        configuration.addAllowedOrigin("http://localhost:8080");// Allow local development environment
 
 
         // Allow all HTTP methods (GET, POST, PUT, DELETE, etc.)
