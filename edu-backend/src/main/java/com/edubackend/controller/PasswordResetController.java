@@ -25,14 +25,15 @@ public class PasswordResetController {
 
     // Endpoint for resetting the password
     @PostMapping("/reset-password/{token}")
-    public String resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) {
+    public String resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
+        passwordResetService.updatePassword(token,newPassword);
         if (jwtUtil.validateToken(token)) {
             String email = jwtUtil.extractSubject(token);
-            // Proceed with password reset logic (e.g., update password in DB)
-            System.out.println("Saving the password into db");
-            return "Password has been successfully reset.";
-        } else {
+
+        }
+        else {
             return "Invalid or expired token.";
         }
+        return "no";
     }
 }

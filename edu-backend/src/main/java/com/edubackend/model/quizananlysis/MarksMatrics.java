@@ -19,4 +19,5 @@ public class MarksMatrics {
     private int  lowestScore = Integer.MAX_VALUE;  // Use MAX_VALUE for meaningful comparison
     private double averageScore = 0.0;
     private double overallAccuracy = 0.0; // Overall accuracy percentage
+    private double averageTimePerQuiz=0;
 }

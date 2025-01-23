@@ -1,7 +1,4 @@
 package com.edubackend.controller;
-
-
-
 import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.model.quizananlysis.ResultsAnalysis;
 import com.edubackend.repository.QuizResultAnalysisRepository;
@@ -16,20 +13,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/analytics")
 public class QuizAttemptResultAnalysisController {
 
-    QuizResultAnalysisRepository quizResultAnalysisRepository;
-    QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl;
-
     @Autowired
-    public QuizAttemptResultAnalysisController(QuizResultAnalysisRepository quizResultAnalysisRepository,
-            QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl) {
-        this.quizResultAnalysisRepository = quizResultAnalysisRepository;
-        this.quizAttemptResultAnalysisServiceImpl = quizAttemptResultAnalysisServiceImpl;
-    }
+    QuizResultAnalysisRepository quizResultAnalysisRepository;
+    @Autowired
+    QuizAttemptResultAnalysisServiceImpl quizAttemptResultAnalysisServiceImpl;
 
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponse<ResultsAnalysis>> saveResultAnalysis(@PathVariable String userId) {
-
         ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(userId);
         return ResponseUtil.success("Result analysis created", createdAnalysis);
     }
@@ -40,7 +31,6 @@ public class QuizAttemptResultAnalysisController {
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @PathVariable String setAttemptId) {
-
         ResultsAnalysis updatedAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysisSetAttemptId(userId, quizSetId, setAttemptId);
         return ResponseUtil.success("Result analysis updated", updatedAnalysis);
 

@@ -1,19 +1,26 @@
 package com.edubackend.service;
 
+import com.edubackend.dto.UserDto;
+import com.edubackend.repository.UserRepo;
 import com.edubackend.utils.JwtUtill;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class PasswordResetService {
 
     @Autowired
     private JavaMailSender javaMailSender;
-
-
+    @Autowired
+    UserService userService;
+    @Autowired
+    UserRepo userRepo;
     private JwtUtill jwtUtill = new JwtUtill();
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
 
     public void sendPasswordResetEmail(String email) {
@@ -22,6 +29,8 @@ public class PasswordResetService {
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
         sendTestEmail(email, resetLink);  // Step 3: Send the reset link to the user's email
     }
+
+
 
 
     public void sendTestEmail(String toAddress,String resetLink) {
@@ -36,6 +45,23 @@ public class PasswordResetService {
 
 
 
+    public String updatePassword(String email, String newPassword) throws Exception {
+       Optional<UserDto> userDto = userRepo.findById(email);
+       if(!userDto.isEmpty()){
+
+           System.out.println("oldPWD:"+"1234567");
+           System.out.println("oldHash:"+userDto.get().getPassword());
+           System.out.println("match Result:"+ passwordEncoder.matches("1234567",userDto.get().getPassword()));
+           String hash = passwordEncoder.encode(newPassword);
+           userDto.get().setPassword(hash);
+           userService.updateUser(userDto.get());
+           System.out.println("newPWD:"+newPassword);
+           System.out.println("newHash:"+hash);
+           return "Password has been successfully reset.";
+       }
+       else
+           return "Password can't be updated please try again!";
+    }
 
 
 }
