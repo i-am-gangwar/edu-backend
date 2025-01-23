@@ -1,0 +1,38 @@
+name: Deploy to Hostinger via SFTP
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: 17
+
+      - name: Build the project
+        run: ./gradlew build # Replace with `mvn package` if using Maven
+
+      - name: Deploy to Hostinger
+        uses: garygrossgarten/github-action-scp@v1.1.0
+        with:
+          local: build/libs/edu-backend-0.0.1-SNAPSHOT.jar
+          remote:  /jarFile/edu-backend-0.0.1-SNAPSHOT.jar
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASS }}
+
+      - name: Start the application on Hostinger
+        run: |
+          sshpass -p "${{ secrets.SFTP_PASS }}" ssh -o StrictHostKeyChecking=no ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} << EOF
+            pkill -f 'java -jar' || true
+            nohup java -jar  /jarFile/edu-backend-0.0.1-SNAPSHOT.jar > app.log 2>&1 &
+          EOF
