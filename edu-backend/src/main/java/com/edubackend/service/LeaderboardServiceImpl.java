@@ -17,6 +17,8 @@ public class LeaderboardServiceImpl {
     QuizResultAnalysisRepository quizResultAnalysisRepository;
     @Autowired
     LeaderboardRepo leaderboardRepo;
+    @Autowired
+    UserService userService;
 
 
     public boolean createOrUpdateLeaderboard(){
@@ -52,9 +54,9 @@ public class LeaderboardServiceImpl {
         List<ResultsAnalysis> resultsAnalyses = quizResultAnalysisRepository.findAll();
         Leaderboard leaderboard = new Leaderboard();
         for (ResultsAnalysis analysis : resultsAnalyses) {
-
+         String userName = userService.getUserById(analysis.getUserId());
             leaderboard.getScore().put(
-                    analysis.getUserId(),
+                    userName,
                     analysis.getOverallPerformance().getMarksMatrics().getTotalCorrectScore().getTotal());
         }
         leaderboard.setScore(shortMapOfInteger(leaderboard.getScore()));
