@@ -8,4 +8,5 @@ import java.util.Optional;
 @JsonIgnoreProperties
 public interface UserRepo extends MongoRepository<UserDto,String> {
        Optional<UserDto> findById(String id);
+       Optional<UserDto> findByContact(String email);
 }
