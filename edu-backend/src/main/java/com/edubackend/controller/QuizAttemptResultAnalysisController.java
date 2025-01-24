@@ -1,5 +1,4 @@
 package com.edubackend.controller;
-import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.model.quizananlysis.ResultsAnalysis;
 import com.edubackend.repository.QuizResultAnalysisRepository;
 import com.edubackend.service.QuizAttemptResultAnalysisServiceImpl;
@@ -8,6 +7,8 @@ import com.edubackend.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/analytics")
@@ -38,18 +39,10 @@ public class QuizAttemptResultAnalysisController {
 
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<ResultsAnalysis>> getResultAnalysis(@PathVariable String userId) {
-        try {
-            ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-            if (resultsAnalysis != null)
-                return ResponseUtil.success("Result analysis data fetched successfully.", resultsAnalysis);
-            else throw new ResourceNotFoundException("No result analysis found");
-        }
-        catch (ResourceNotFoundException e) {
-            throw new ResourceNotFoundException("No result analysis found for useId: " + userId);
-        }
-        catch (Exception e) {
-            throw new RuntimeException("An unexpected error occurred while creating quiz attempt.", e);
-        }
+    public ResponseEntity<ApiResponse<Object>> getResultAnalysis(@PathVariable String userId) {
+        ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
+        return ResponseUtil.success("Result ananlysis fetched successfully.",
+                Objects.requireNonNullElseGet(resultsAnalysis, ArrayList::new));
+
     }
 }

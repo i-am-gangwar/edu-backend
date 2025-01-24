@@ -45,10 +45,6 @@ public class LeaderboardServiceImpl {
     }
 
 
-
-
-
-
     public Leaderboard calculateLeaderboard(){
 
         List<ResultsAnalysis> resultsAnalyses = quizResultAnalysisRepository.findAll();

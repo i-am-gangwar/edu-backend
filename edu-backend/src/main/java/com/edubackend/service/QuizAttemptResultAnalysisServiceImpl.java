@@ -101,7 +101,6 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
         }
         catch (Exception e) {
-            // Handle unexpected exceptions and log them for troubleshooting
             String errorMessage = "An unexpected error occurred while creating quiz attempt.";
             log.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);

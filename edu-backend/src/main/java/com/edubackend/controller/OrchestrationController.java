@@ -27,7 +27,7 @@ public class OrchestrationController {
     @PostMapping("/{userId}/{quizSetId}/attempts")
     public String executeAllApis(@PathVariable String userId, @PathVariable String quizSetId, @Valid @RequestBody QuizSetAttempt newAttempt) throws Exception {
 
-        ResponseEntity<ApiResponse<QuizSetAttempt>> savedData = quizAttemptsController.addQuizAttempt(userId,quizSetId, newAttempt);
+        ResponseEntity<ApiResponse<QuizSetAttempt>> savedData = quizAttemptsController.saveQuizAttempt(userId,quizSetId, newAttempt);
         String quizSetAttemptId = savedData.getBody().getData().getQuizSetAttemptId();
         System.out.println("Quiz set attempt data saved successfully!, setattemptId: "+ quizSetAttemptId);
 

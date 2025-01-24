@@ -1,7 +1,6 @@
 package com.edubackend.service;
 
 import com.edubackend.Exceptions.Exception.OperationFailedException;
-import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.dto.QuestionDTO;
 import com.edubackend.model.quizattempts.QuizAttempts;
 import com.edubackend.model.quizattempts.QuizSet;
@@ -251,70 +250,48 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
 
     public QuizResults getResultByUserId(String userId){
-        QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
-        return checkData(quizResults);
+        return quizAttemptResultRepository.findByUserId(userId);
 
     }
 
     public QuizSetResult getResultByUserIdAndQuizSetId(String userId, String quizSetId){
-        QuizSetResult quizSetResult = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
-        if(quizSetResult.getQuizSetAttemptResults().isEmpty())
-            throw  new ResourceNotFoundException(String.format(
-                    "User Quiz Attempt Not Saved. userId: %s, quizSetId: %s",
-                    userId, quizSetId));
-        quizSetResult = checkData(quizSetResult);
-        quizSetResult.setQuizSetId(quizSetId);
-        return quizSetResult;
+        return quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
     }
 
 
     public QuizSetAttemptResult getResultByUserIdAndQuizSetIdAndSetAttemptId(String userId, String quizSetId, String quizSetAttemptId) throws Exception {
-        try {
             QuizSetResult results = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId, quizSetId);
             Optional<QuizSetAttemptResult> quizSetAttemptResult = results.getQuizSetAttemptResults().stream()
                     .filter(qs -> qs.getQuizSetAttemptId().equals(quizSetAttemptId)).findFirst();
-            System.out.println(quizSetAttemptResult);
-            if (quizSetAttemptResult.isPresent())
-                return checkData(quizSetAttemptResult.get());
-            else
-                throw new ResourceNotFoundException(String.format(
-                        "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
-                        userId, quizSetId, quizSetAttemptId));
-        }
-        catch (ResourceNotFoundException ex){
-            throw new ResourceNotFoundException(String.format(
-                    "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
-                    userId, quizSetId, quizSetAttemptId));
-
-        }
+        return quizSetAttemptResult.orElse(null);
 
     }
 
 
 
-    public <T> T checkData(T result){
-
-        try {
-            if (result==null) {
-                throw new OperationFailedException(
-                        "User data is not found in db please enter valid details");
-            }
-            return result;
-        }
-        catch (OperationFailedException e) {
-            log.warn("Operation failed: {}", e.getMessage(), e);
-            throw e;
-        }
-        catch (DataAccessResourceFailureException e) {
-            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
-            log.error(errorMessage, e);
-            throw new DataAccessResourceFailureException(errorMessage);
-        }
-        catch (ResourceNotFoundException ex){
-            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
-        }
-
-    }
+//    public <T> T checkData(T result){
+//
+//        try {
+//            if (result==null) {
+//                throw new OperationFailedException(
+//                        "User data is not found in db please enter valid details");
+//            }
+//            return result;
+//        }
+//        catch (OperationFailedException e) {
+//            log.warn("Operation failed: {}", e.getMessage(), e);
+//            throw e;
+//        }
+//        catch (DataAccessResourceFailureException e) {
+//            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+//            log.error(errorMessage, e);
+//            throw new DataAccessResourceFailureException(errorMessage);
+//        }
+//        catch (ResourceNotFoundException ex){
+//            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
+//        }
+//
+//    }
 
 
 }

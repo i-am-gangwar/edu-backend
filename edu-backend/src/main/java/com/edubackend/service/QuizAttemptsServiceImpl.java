@@ -10,8 +10,6 @@ import com.edubackend.service.interfaces.QuizAttemptsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,9 +63,8 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
     }
 
 
-    @Transactional
-    public  QuizSetAttempt createAttempt(String userId, String quizSetId, QuizSetAttempt newAttempt ) throws Exception {
 
+    public  QuizSetAttempt saveQuizAttempt(String userId, String quizSetId, QuizSetAttempt newAttempt ) throws Exception {
         try {
             QuizSetAttempt savedQuizSetAttempt = addQuizAttempt(userId, quizSetId, newAttempt);
             if (savedQuizSetAttempt == null) {
@@ -81,21 +78,20 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
             log.warn("Operation failed: {}", e.getMessage(), e);
             throw e;
         }
-        catch (DataAccessResourceFailureException e) {  // Handle missing collection or database access issues
+        catch (DataAccessResourceFailureException e) {
             String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
             log.error(errorMessage, e);
             throw new DataAccessResourceFailureException(errorMessage);
 
         }
          catch (Exception e) {
-            // Handle unexpected exceptions and log them for troubleshooting
-            String errorMessage = "An unexpected error occurred while creating quiz attempt.";
+            String errorMessage = "An unexpected error occurred while saving the quiz attempt.";
             log.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);
         }
     }
 
-
+    @Transactional
     public QuizSetAttempt addQuizAttempt(String userId, String quizSetId, QuizSetAttempt newAttempt){
         QuizAttempts optionalResults  =  quizAttemptsRepository.findByUserId(userId);
         QuizSetAttempt setAttempt = createSetAttempt(newAttempt);
@@ -116,75 +112,52 @@ public class QuizAttemptsServiceImpl implements QuizAttemptsService {
 
     }
 
-
     public QuizAttempts getResultByUserId(String userId) {
-        QuizAttempts result = quizAttemptsRepository.findByUserId(userId);
-        return checkData(result);
+        return quizAttemptsRepository.findByUserId(userId);
 
     }
 
-
-
-
-
     public QuizSet getResultByUserIdAndSetId(String userId,String quizSetId) {
-           QuizSet quizSet = quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
-           if(quizSet.getQuizSetAttempts().isEmpty())
-               throw  new ResourceNotFoundException(String.format(
-                       "User Quiz Attempt Not Saved. userId: %s, quizSetId: %s",
-                       userId, quizSetId));
-           quizSet = checkData(quizSet);
-           quizSet.setQuizSetId(quizSetId);
-           return quizSet;
+
+        return quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
 
 
     }
 
 
     public QuizSetAttempt getResultByUserIdAndSetIdAndSetAttemptId(String userId, String quizSetId, String setAttemptId) {
-        try {
             QuizSet results =  quizAttemptsRepository.findQuizSetAttemptsByUserIdAndQuizSetId(userId,quizSetId);
             Optional<QuizSetAttempt> quizSetAttempt = results.getQuizSetAttempts().stream()
                     .filter(qs -> qs.getQuizSetAttemptId().equals(setAttemptId)).findFirst();
+        return quizSetAttempt.orElse(null);
 
-            if (quizSetAttempt.isPresent())
-               return checkData(quizSetAttempt.get());
-            else
-                throw new Exception();
 
-        }
-        catch (Exception ex){
-            throw new ResourceNotFoundException(String.format(
-                    "User Quiz Attempt Not Saved. userId: %s, quizSetId: %s, Attempt Details: %s",
-                    userId, quizSetId, setAttemptId));
-        }
     }
 
 
 
-    public <T> T checkData(T result){
-
-        try {
-            if (result==null) {
-                throw new OperationFailedException(
-                        "User data is not found in db, enter valid userId");
-            }
-            return result;
-        }
-        catch (OperationFailedException e) {
-            log.warn("Operation failed: {}", e.getMessage(), e);
-            throw e;
-        }
-        catch (DataAccessResourceFailureException e) {
-            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
-            log.error(errorMessage, e);
-            throw new DataAccessResourceFailureException(errorMessage);
-        }
-        catch (ResourceNotFoundException ex){
-            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
-        }
-
-    }
+//    public <T> T checkData(T result){
+//        try {
+//            if (result==null) {
+//                throw new OperationFailedException(
+//                        "User data is not found in db, enter valid userId");
+//            }
+//            return result;
+//        }
+//        catch (OperationFailedException e) {
+//            log.warn("Operation failed: {}", e.getMessage(), e);
+//            throw e;
+//        }
+//        catch (DataAccessResourceFailureException e) {
+//            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+//            log.error(errorMessage, e);
+//            throw new DataAccessResourceFailureException(errorMessage);
+//        }
+//        catch (ResourceNotFoundException ex){
+//            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
+//        }
+//
+//    }
 
 
 

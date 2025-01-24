@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @RestController
@@ -34,36 +33,11 @@ public class LeaderboardController {
         else
             throw new OperationFailedException("unable to create or update leaderboard the request this time.");
     }
-
     @GetMapping
-    public ResponseEntity<ApiResponse< List<Leaderboard> >> getLeaderboard(){
-        try {
-            List<Leaderboard>  leaderboard = leaderboardService.getLeaderboard();
-//            Map<String,Integer> totalQuizAttempted = leaderboard.get(0).getTotalQuizAttempted();
-//            System.out.println("total:  "+totalQuizAttempted.size());
-//            for(int i =1;i<=1000;i++){
-//                boolean flag = false;
-//                String s = "user"+i;
-//                for(Map.Entry<String, Integer> mp : totalQuizAttempted.entrySet()){
-//                        if(Objects.equals(mp.getKey(), s)){
-//                           flag = true;
-//                            break;
-//                        }
-//                }
-//                if (!flag)
-//                    System.out.println("not there:"+s);
-//
-//            }
-
-
-            if (!leaderboard.isEmpty())
-                return ResponseUtil.success("Leaderboard data fetched successfully.",leaderboard);
-            else
-                throw new ResourceNotFoundException("No leaderboard found");
-        } catch (Exception e) {
-            throw new RuntimeException("An unexpected error occurred while creating quiz attempt.", e);
-        }
+    public ResponseEntity<ApiResponse<Object>> getLeaderboard() {
+        List<Leaderboard> leaderboard = leaderboardService.getLeaderboard();
+        return ResponseUtil.success("Leaderboard data fetched successfully.",
+                Objects.requireNonNullElseGet(leaderboard, ArrayList::new));
     }
-
 
 }
