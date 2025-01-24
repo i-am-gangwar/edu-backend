@@ -3,6 +3,7 @@ package com.edubackend.service;
 import com.edubackend.dto.UserDto;
 import com.edubackend.repository.UserRepo;
 import com.edubackend.utils.JwtUtill;
+import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -34,7 +35,6 @@ public class EmailService {
         message.setTo(toAddress);  // Receiver's email address
         message.setSubject(emailSubject);
         message.setText(emailBody);
-        System.out.println("senderEmail:"+senderEmail);
         message.setFrom(senderEmail);  // Your email address (same as the SMTP configuration)
         javaMailSender.send(message);
 
@@ -46,16 +46,34 @@ public class EmailService {
         String resetToken = jwtUtill.generateToken(email);
         String emailSubject = "Forget password reset";
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
-        String emailBody = "Hi there\nTo reset the password click on below link, link is valid for 10 minutes only\n"+ resetLink;
+        String userName = "There!";
+        if(userRepo.findByContact(email).isPresent())
+           userName = userRepo.findByContact(email).get().getUsername();
+        String emailBody = "Hello,"+ userName +
+        "\n\n" +
+                "We received a request to reset your password. To proceed, please click the link below:\n\n" +
+                "Reset Link: " + resetLink + "\n\n" +
+                "This link will remain valid for the next 10 minutes. If you did not request a password reset, please ignore this email.\n\n" +
+                "Best regards,\n" +
+                "The GS by Vishnu Team";
         sendEmail(email,emailSubject, emailBody);
     }
 
 
 
     public String sendOtpEmail(String email){
-        String otp = otpService.generateOtp(7);
+        String otp = otpService.generateOtp(6);
         String emailSubject = "Otp Verification Email";
-        String emailBody = "Hi there\n To Register into the portal please under the below otp, Otp is valid for 10 minutes only\n"+ otp;
+        String userName = "There!";
+        if(userRepo.findByContact(email).isPresent())
+            userName = userRepo.findByContact(email).get().getUsername();
+        String emailBody = "Hello,"+ userName +
+                "\n\n" +
+                "Thank you for registering with us! To complete your registration, please use the OTP provided below:\n\n" +
+                "OTP: " + otp + "\n\n" +
+                "Please note that this OTP is valid for the next 5 minutes. If you did not request this, please ignore this email.\n\n" +
+                "Best regards,\n" +
+                "The GS by Vishnu Team";
         sendEmail(email,emailSubject, emailBody);
         otpService.saveOtp(email,otp,5);
         return "Otp email Sent successfully";
