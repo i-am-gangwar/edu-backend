@@ -19,4 +19,14 @@ public class UserService {
         }
         else return id;
     }
+
+    public String updateUser(UserDto userDto) throws Exception {
+       try{
+           userRepo.save(userDto);
+       }
+       catch (Exception e){
+           throw new  Exception("unable to save new password");
+       }
+        return "try later";
+    }
 }
