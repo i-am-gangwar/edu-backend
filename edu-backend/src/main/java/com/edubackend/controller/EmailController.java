@@ -7,6 +7,7 @@ import com.edubackend.service.OtpService;
 import com.edubackend.utils.ApiResponse;
 import com.edubackend.utils.JwtUtill;
 import com.edubackend.utils.ResponseUtil;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class EmailController {
 
 
     @PostMapping("/send-otp/{emailId}")
-    public ResponseEntity<ApiResponse<Object>> sendOtpOnEmail(@PathVariable String emailId){
+    public ResponseEntity<ApiResponse<Object>> sendOtpOnEmail(@PathVariable String emailId) throws MessagingException {
         Optional<UserDto> userDto = userRepo.findByContact(emailId);
         if(userDto.isEmpty())
             return ResponseUtil.success(emailService.sendOtpEmail(emailId), new ArrayList<>());
@@ -44,7 +45,7 @@ public class EmailController {
 
 
     @PostMapping("/forgot-password/{emailId}")
-    public String sendForgotPassword(@PathVariable("emailId") String email) {
+    public String sendForgotPassword(@PathVariable("emailId") String email) throws MessagingException {
         emailService.sendPasswordResetEmail(email);
         return "Password reset link has been sent to your email.";
     }
