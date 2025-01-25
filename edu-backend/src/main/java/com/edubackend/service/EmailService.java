@@ -2,7 +2,7 @@ package com.edubackend.service;
 
 import com.edubackend.dto.UserDto;
 import com.edubackend.repository.UserRepo;
-import com.edubackend.utils.JwtUtill;
+import com.edubackend.utils.JWtUtil;
 import com.edubackend.utils.PasswordUtil;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,7 @@ import org.springframework.messaging.MessagingException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+
 
 @Service
 public class EmailService {
@@ -25,10 +26,15 @@ public class EmailService {
     private UserRepo userRepo;
     @Autowired
     private OtpService otpService;
-    private final JwtUtill jwtUtill = new JwtUtill();
+    @Autowired
+    private JWtUtil jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
     @Value(value = "${spring.mail.username}")
     private String senderEmail;
+    @Autowired
+    private PasswordUtil passwordUtil;
+
+
 //
 //    public void sendEmail(String toAddress, String emailSubject, String emailBody) {
 //        SimpleMailMessage message = new SimpleMailMessage();
@@ -40,12 +46,15 @@ public class EmailService {
 //
 //    }
 
+
+
     public void sendHtmlEmail(String to, String subject, String htmlContent) throws MessagingException, jakarta.mail.MessagingException {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
         messageHelper.setTo(to);
         messageHelper.setSubject(subject);
         messageHelper.setText(htmlContent, true); // set to true to indicate HTML content
+        messageHelper.setFrom(senderEmail);
         javaMailSender.send(mimeMessage);
     }
 
@@ -64,20 +73,20 @@ public class EmailService {
                 "<p style='font-size: 16px; line-height: 1.6;'>Thank you for registering with us! To complete your registration, please use the OTP provided below:</p>" +
                 "<div style='background-color: #f1f1f1; padding: 10px; font-size: 18px; font-weight: bold; text-align: center; margin: 20px 0; border-radius: 6px;'>" +
                 "<span style='color: #007bff;'>OTP: " + otp + "</span></div>" +
-                "<p style='font-size: 16px; line-height: 1.6;'>This OTP is valid for the next 5 minutes. If you did not request this, please ignore this email.</p>" +
+                "<p style='font-size: 16px; line-height: 1.6;'>This OTP is valid for the next 10 minutes. If you did not request this, please ignore this email.</p>" +
                 "<p style='font-size: 16px; color: #777;'>Best regards,<br>The GS by Vishnu Team</p>" +
                 "</div>" +
                 "<div style='text-align: center; font-size: 14px; color: #aaa; padding: 10px; background-color: #f4f7f6;'>" +
-                "If you have any questions, feel free to contact us at rakeshgangwarjnv256@gmail.com.</div>" +
+                "If you have any questions, feel free to contact us at " + senderEmail + "</div>" +
                 "</body></html>";
         sendHtmlEmail(email,emailSubject,htmlContent);
-        otpService.saveOtp(email,otp,5);
+        otpService.saveOtp(email,otp,10);
         return "Otp email Sent successfully";
     }
 
 
     public String sendPasswordResetEmail(String email) throws jakarta.mail.MessagingException {
-        String resetToken = jwtUtill.generateToken(email);
+        String resetToken = jwtUtil.generateToken(email);
         String emailSubject = "Forget password reset";
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
         String userName = "There!";
@@ -95,7 +104,7 @@ public class EmailService {
                 "<p style='font-size: 16px; color: #777;'>Best regards,<br>The GS by Vishnu Team</p>" +
                 "</div>" +
                 "<div style='text-align: center; font-size: 14px; color: #aaa; padding: 10px; background-color: #f4f7f6;'>" +
-                "If you have any questions, feel free to contact us at rakeshgangwarjnv256@gmail.com.</div>" +
+                "If you have any questions, feel free to contact us at " + senderEmail + "</div>" +
                 "</body></html>";
         sendHtmlEmail(email,emailSubject,htmlContent);
         return "Password reset link has been sent to your email.";
@@ -105,14 +114,13 @@ public class EmailService {
     public String updatePassword(String email, String newPassword) throws Exception {
         Optional<UserDto> userDto = userRepo.findByContact(email);
        if(userDto.isPresent()){
-           String newHash = PasswordUtil.encryptPassword(newPassword,"bnmTWz3O+HxE4XDecxUZsQ==");
-           System.out.println("newHash:"+newHash);
-           userDto.get().setPassword(newPassword);
+           String newHash = passwordUtil.customEncryptPassword(newPassword);
+           userDto.get().setPassword(newHash);
            userRepo.save(userDto.get());
-           return "Password has been successfully reset.";
+           return "Password has been updated successfully";
        }
        else
-           return "Password can't be updated please try again!";
+           return "User data not found in db";
     }
 
 

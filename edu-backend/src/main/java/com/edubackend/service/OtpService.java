@@ -5,7 +5,6 @@ import com.edubackend.model.Otp;
 import com.edubackend.repository.OtpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
@@ -39,11 +38,6 @@ public class OtpService {
 
     }
 
-    public Otp findOtpByEmail(String email) {
-        return otpRepository.findByEmail(email);
-    }
-
-
     public String verifyOtp(String email, String inputOtp) {
        Otp otp = otpRepository.findByEmail(email);
         if (otp!=null) {
@@ -59,7 +53,7 @@ public class OtpService {
             else
                 return "Entered Otp not matching, enter valid otp";
         }
-        return "Otp details not found in db";
+        return "Otp details not found in db enter the email on which otp was sent.";
 
     }
 
@@ -71,15 +65,6 @@ public class OtpService {
             otp.append(DIGITS.charAt(RANDOM.nextInt(DIGITS.length())));
         }
         return otp.toString();
-    }
-
-
-
-
-    public void markOtpAsVerified(String email) {
-        Otp otp = otpRepository.findByEmail(email);
-        otp.setVerified(true);
-        otpRepository.save(otp);
     }
 
 

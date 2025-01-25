@@ -5,7 +5,7 @@ import com.edubackend.repository.UserRepo;
 import com.edubackend.service.EmailService;
 import com.edubackend.service.OtpService;
 import com.edubackend.utils.ApiResponse;
-import com.edubackend.utils.JwtUtill;
+import com.edubackend.utils.JWtUtil;
 import com.edubackend.utils.ResponseUtil;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,8 @@ public class EmailController {
     private OtpService otpService;
     @Autowired
     private UserRepo userRepo;
-    private final JwtUtill jwtUtil = new JwtUtill();
+    @Autowired
+    private JWtUtil jWtUtil;
 
 
     @PostMapping("/send-otp/{emailId}")
@@ -44,6 +45,7 @@ public class EmailController {
 
     @PostMapping("/forgot-password/{emailId}")
     public ResponseEntity<ApiResponse<Object>> sendForgotPassword(@PathVariable("emailId") String email) throws MessagingException {
+
         return  ResponseUtil.success( emailService.sendPasswordResetEmail(email), new ArrayList<>());
     }
 
@@ -51,11 +53,11 @@ public class EmailController {
 
     @PostMapping("/reset-password/{token}")
     public ResponseEntity<ApiResponse<Object>> resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
-        if (jwtUtil.validateToken(token)) {
-            String email = jwtUtil.extractSubject(token);
+        if (jWtUtil.validateToken(token)) {
+            String email = jWtUtil.extractSubject(token);
            return ResponseUtil.success( emailService.updatePassword(email,newPassword), new ArrayList<>());
         }
-        else return ResponseUtil.success( "Token expired", new ArrayList<>());
+        else return ResponseUtil.success( "Token is invalid or expired", new ArrayList<>());
 
     }
 }

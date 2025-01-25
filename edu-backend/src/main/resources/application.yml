@@ -21,10 +21,6 @@ spring:
 
 
 
-
-
-
-
   kafka:
     bootstrap-servers: "<aiven-kafka-broker-address>:9092"
     properties:
@@ -45,5 +41,8 @@ spring:
 
 
 
+cred:
+  jwt_SecretKey: ${jwt_SecretKey}
+  salt_Key: ${salt_Key}
 
 
