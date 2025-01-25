@@ -3,10 +3,14 @@ package com.edubackend.service;
 
 import com.edubackend.model.Otp;
 import com.edubackend.repository.OtpRepository;
+import com.edubackend.utils.ApiResponse;
+import com.edubackend.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Service
 public class OtpService {
@@ -15,8 +19,6 @@ public class OtpService {
     private OtpRepository otpRepository;
     private static final String DIGITS = "0123456789";
     private static final SecureRandom RANDOM = new SecureRandom();
-
-
 
     public void saveOtp(String email, String otp, int validityMinutes) {
         Otp otpEntity = new Otp();
@@ -38,22 +40,24 @@ public class OtpService {
 
     }
 
-    public String verifyOtp(String email, String inputOtp) {
+    public ResponseEntity<ApiResponse<Object>> verifyOtp(String email, String inputOtp) {
        Otp otp = otpRepository.findByEmail(email);
         if (otp!=null) {
             if (otp.getOtp().equals(inputOtp)){
                 if(otp.getExpirationTime().isAfter(LocalDateTime.now()) && !otp.isVerified()) {
                     otp.setVerified(true);
                     otpRepository.delete(otp);
-                    return "Otp Verified";
+                    return ResponseUtil.success( "Otp verified successfully.", new ArrayList<>());
                 }
                 else
-                    return "Otp expired please generate a new otp";
+                  return ResponseUtil.badRequest( "Otp expired please generate a new otp", new ArrayList<>());
+
             }
             else
-                return "Entered Otp not matching, enter valid otp";
+                return ResponseUtil.badRequest( "Entered Otp not matching. Enter a valid otp.", new ArrayList<>());
+
         }
-        return "Otp details not found in db enter the email on which otp was sent.";
+        return ResponseUtil.internalServerError( "Otp details not found in db enter the email on which otp was sent.", new ArrayList<>());
 
     }
 
@@ -67,6 +71,9 @@ public class OtpService {
         return otp.toString();
     }
 
+    public Otp findOtpByEmail(String email){
+        return otpRepository.findByEmail(email);
+    }
 
 
 

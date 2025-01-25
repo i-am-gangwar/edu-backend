@@ -59,7 +59,7 @@ public class EmailService {
     }
 
 
-    public String sendOtpEmail(String email) throws jakarta.mail.MessagingException {
+    public String sendOtpEmail(String email) throws Exception {
         String otp = otpService.generateOtp(6);
         String emailSubject = "Otp Verification Email";
         String userName = "There!";
@@ -85,7 +85,7 @@ public class EmailService {
     }
 
 
-    public String sendPasswordResetEmail(String email) throws jakarta.mail.MessagingException {
+    public String sendPasswordResetEmail(String email) throws Exception {
         String resetToken = jwtUtil.generateToken(email);
         String emailSubject = "Forget password reset";
         String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
@@ -120,7 +120,7 @@ public class EmailService {
            return "Password has been updated successfully";
        }
        else
-           return "User data not found in db";
+           throw new Exception("data not found");
     }
 
 

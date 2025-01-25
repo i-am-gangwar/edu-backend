@@ -29,25 +29,47 @@ public class EmailController {
 
 
     @PostMapping("/send-otp/{emailId}")
-    public ResponseEntity<ApiResponse<Object>> sendOtpOnEmail(@PathVariable String emailId) throws MessagingException {
+    public ResponseEntity<ApiResponse<Object>> sendOtpOnEmail(@PathVariable String emailId) throws Exception {
         Optional<UserDto> userDto = userRepo.findByContact(emailId);
-        if(userDto.isEmpty())
-            return ResponseUtil.success(emailService.sendOtpEmail(emailId), new ArrayList<>());
+        if(userDto.isEmpty()){
+            try {
+                return ResponseUtil.success(emailService.sendOtpEmail(emailId), new ArrayList<>());
+            }
+            catch (Exception ex){
+                return ResponseUtil.internalServerError("Unable to send otp this time. please try after some time.", new ArrayList<>());
+            }
+
+        }
+
         else
-            return ResponseUtil.success("User already exit in the system with this emailID", new ArrayList<>());
+            return ResponseUtil.conflict("User already exit in the system with this emailID", new ArrayList<>());
     }
 
 
     @PostMapping("/validateOtp/{emailId}/{otp}")
     public ResponseEntity<ApiResponse<Object>> validateOtpEmail(@PathVariable String emailId,@PathVariable String otp){
-        return  ResponseUtil.success( otpService.verifyOtp(emailId,otp), new ArrayList<>());
+        return  otpService.verifyOtp(emailId,otp);
     }
 
     @PostMapping("/forgot-password/{emailId}")
     public ResponseEntity<ApiResponse<Object>> sendForgotPassword(@PathVariable("emailId") String email) throws MessagingException {
+        Optional<UserDto> userDto = userRepo.findByContact(email);
+        if(userDto.isPresent()){
+            try {
+                return ResponseUtil.success(emailService.sendPasswordResetEmail(email), new ArrayList<>());
+            }
+            catch (Exception ex){
+                return ResponseUtil.internalServerError( "unable to send reset link this time please try after some time.", new ArrayList<>());
+            }
 
-        return  ResponseUtil.success( emailService.sendPasswordResetEmail(email), new ArrayList<>());
+        }
+        else
+            return ResponseUtil.badRequest( "User not exits in the system with this emailID! enter valid email", new ArrayList<>());
+
+
+
     }
+
 
 
 
@@ -55,9 +77,17 @@ public class EmailController {
     public ResponseEntity<ApiResponse<Object>> resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
         if (jWtUtil.validateToken(token)) {
             String email = jWtUtil.extractSubject(token);
-           return ResponseUtil.success( emailService.updatePassword(email,newPassword), new ArrayList<>());
-        }
-        else return ResponseUtil.success( "Token is invalid or expired", new ArrayList<>());
+            try {
+                return ResponseUtil.success( emailService.updatePassword(email,newPassword), new ArrayList<>());
+            }
+            catch (Exception ex){
+                return ResponseUtil.badRequest( "User data not found in db, please try after some time.", new ArrayList<>());
+            }
 
+        }
+        else
+            return ResponseUtil.badRequest( "Token is invalid or expired", new ArrayList<>());
     }
+
+
 }
