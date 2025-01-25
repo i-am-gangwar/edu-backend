@@ -27,7 +27,6 @@ public class EmailController {
     private final JwtUtill jwtUtil = new JwtUtill();
 
 
-
     @PostMapping("/send-otp/{emailId}")
     public ResponseEntity<ApiResponse<Object>> sendOtpOnEmail(@PathVariable String emailId) throws MessagingException {
         Optional<UserDto> userDto = userRepo.findByContact(emailId);
@@ -43,25 +42,20 @@ public class EmailController {
         return  ResponseUtil.success( otpService.verifyOtp(emailId,otp), new ArrayList<>());
     }
 
-
     @PostMapping("/forgot-password/{emailId}")
-    public String sendForgotPassword(@PathVariable("emailId") String email) throws MessagingException {
-        emailService.sendPasswordResetEmail(email);
-        return "Password reset link has been sent to your email.";
+    public ResponseEntity<ApiResponse<Object>> sendForgotPassword(@PathVariable("emailId") String email) throws MessagingException {
+        return  ResponseUtil.success( emailService.sendPasswordResetEmail(email), new ArrayList<>());
     }
 
 
 
-
     @PostMapping("/reset-password/{token}")
-    public String resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
         if (jwtUtil.validateToken(token)) {
             String email = jwtUtil.extractSubject(token);
-            emailService.updatePassword(token,newPassword);
+           return ResponseUtil.success( emailService.updatePassword(email,newPassword), new ArrayList<>());
         }
-        else {
-            return "Invalid or expired token.";
-        }
-        return "no";
+        else return ResponseUtil.success( "Token expired", new ArrayList<>());
+
     }
 }

@@ -124,6 +124,11 @@
 			<version>3.0.2</version> <!-- Latest stable version -->
 		</dependency>
 
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.15</version>
+		</dependency>
 
 	</dependencies>
 

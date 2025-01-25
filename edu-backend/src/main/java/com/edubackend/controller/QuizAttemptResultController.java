@@ -21,8 +21,6 @@ public class QuizAttemptResultController {
     @Autowired
     public QuizAttemptResultController(QuizAttemptResultServiceImpl quizAttemptResultService) {
         this.quizAttemptResultService = quizAttemptResultService;
-
-
     }
 
 
