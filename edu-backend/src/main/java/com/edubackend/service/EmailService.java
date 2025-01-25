@@ -88,7 +88,7 @@ public class EmailService {
     public String sendPasswordResetEmail(String email) throws Exception {
         String resetToken = jwtUtil.generateToken(email);
         String emailSubject = "Forget password reset";
-        String resetLink = "http://localhost:8080/reset-password?token=" + resetToken;
+        String resetLink = "https://gsbyvishnusir.com/reset-password?token=" + resetToken;
         String userName = "There!";
         if(userRepo.findByContact(email).isPresent())
             userName = userRepo.findByContact(email).get().getUsername();

@@ -7,6 +7,7 @@ import com.edubackend.service.OtpService;
 import com.edubackend.utils.ApiResponse;
 import com.edubackend.utils.JWtUtil;
 import com.edubackend.utils.ResponseUtil;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -74,7 +75,8 @@ public class EmailController {
 
 
     @PostMapping("/reset-password/{token}")
-    public ResponseEntity<ApiResponse<Object>> resetPassword(@PathVariable("token") String token, @RequestBody String newPassword) throws Exception {
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@PathVariable("token") String token,@RequestBody JsonNode body) throws Exception {
+        String newPassword = body.get("newPwd").asText();
         if (jWtUtil.validateToken(token)) {
             String email = jWtUtil.extractSubject(token);
             try {
