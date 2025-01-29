@@ -8,10 +8,12 @@ import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
+import com.edubackend.mongo.MongoService;
 import com.edubackend.repository.QuizAttemptResultRepository;
 import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.interfaces.QuizAttemptResultService;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
@@ -27,17 +29,19 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
   private final QuestionService questionService;
   private final QuizAttemptsServiceImpl quizAttemptsService;
   private final QuizAttemptsRepository quizAttemptsRepository;
+  private final MongoService mongoService;
 
-    @Autowired
+  @Autowired
     public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository,
                                         QuestionService questionService,
                                         QuizAttemptsServiceImpl quizAttemptsService,
-                                        QuizAttemptsRepository quizAttemptsRepository) {
+                                        QuizAttemptsRepository quizAttemptsRepository,
+                                        MongoService mongoService) {
         this.quizAttemptResultRepository = quizAttemptResultRepository;
         this.questionService = questionService;
         this.quizAttemptsService = quizAttemptsService;
         this.quizAttemptsRepository = quizAttemptsRepository;
-
+        this.mongoService = mongoService;
     }
 
     @Override
@@ -196,6 +200,8 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                         .filter(QuestionDTO.Option::isCorrect)
                         .map(QuestionDTO.Option::getId)
                         .toList();
+                Document document = mongoService.getDocumentById("subjects",question.getSubjectId());
+                String subjectName = document != null ? document.getString("name") : null;
                 // Check if the question was attempted
                 if (!selectedAnswers.isEmpty()) {
                     totalAttemptedQuestions++;
@@ -203,16 +209,16 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                     if (selectedAnswers.size() == correctOptionIds.size() &&
                             new HashSet<>(selectedAnswers).containsAll(correctOptionIds)) {
                         correctAnswers++;
-                        subjectScoresForCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectScoresForCorrectAns.merge(subjectName, 1, Integer::sum);
                         subjectCategoryScoresForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     } else {
                         incorrectAnswers++;
-                        subjectScoresForInCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectScoresForInCorrectAns.merge(subjectName, 1, Integer::sum);
                         subjectCategoryScoresForInForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     }
                 }
                 else{
-                    subjectScoresForNotAttemptedQ.merge(question.getSubjectId(), 1, Integer::sum);
+                    subjectScoresForNotAttemptedQ.merge(subjectName, 1, Integer::sum);
                     subjectCategoryScoresNotAttemptedQ.merge(question.getCategory(), 1, Integer::sum);
 
                 }
