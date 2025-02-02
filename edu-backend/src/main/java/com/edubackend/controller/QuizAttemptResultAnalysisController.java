@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @RestController
@@ -22,8 +23,12 @@ public class QuizAttemptResultAnalysisController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponse<ResultsAnalysis>> saveResultAnalysis(@PathVariable String userId) {
-        ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(userId);
-        return ResponseUtil.success("Result analysis created", createdAnalysis);
+       List<ResultsAnalysis>  resultsAnalyses = quizResultAnalysisRepository.findAll();
+       for(ResultsAnalysis rs: resultsAnalyses) {
+           ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(rs.getUserId());
+       }
+       // return ResponseUtil.success("Result analysis created", createdAnalysis);
+        return ResponseUtil.success("Result analysis created",resultsAnalyses.get(0));
     }
 
 

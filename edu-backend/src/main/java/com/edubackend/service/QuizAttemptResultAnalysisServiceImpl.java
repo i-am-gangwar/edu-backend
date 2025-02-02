@@ -173,7 +173,7 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
           totalTime = totalTime + Double.parseDouble( attemptResult.getTimeSpent());
           marksMatrics.setAverageTimePerQuiz(totalTime/marksMatrics.getTotalQuizSets().getTotal());
-          System.out.println("av.:"+ marksMatrics.getAverageTimePerQuiz());
+          System.out.println("av. time per quiz:"+ marksMatrics.getAverageTimePerQuiz());
 
    return  marksMatrics;
   }
