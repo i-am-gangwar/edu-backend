@@ -33,15 +33,13 @@ public class QuizAttemptResultAnalysisController {
             @PathVariable String quizSetId,
             @PathVariable String setAttemptId) {
         ResultsAnalysis updatedAnalysis = quizAttemptResultAnalysisServiceImpl.updateAnalysisSetAttemptId(userId, quizSetId, setAttemptId);
-        return ResponseUtil.success("Result analysis updated", updatedAnalysis);
-
-    }
+        return ResponseUtil.success("Result analysis updated", updatedAnalysis);}
 
 
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<Object>> getResultAnalysis(@PathVariable String userId) {
         ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
-        return ResponseUtil.success("Result ananlysis fetched successfully.",
+        return ResponseUtil.success("Result analysis fetched successfully.",
                 Objects.requireNonNullElseGet(resultsAnalysis, ArrayList::new));
 
     }
