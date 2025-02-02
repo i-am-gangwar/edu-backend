@@ -39,7 +39,6 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
     public ResultsAnalysis createAnalysisByUserId(String userId ){
         try {
-
             QuizResults userResult = quizAttemptResultRepository.findByUserId(userId);
             ResultsAnalysis resultsAnalysis = calculatePerformance(userResult);
             ResultsAnalysis rsltanalysis = quizResultAnalysisRepository.findByUserId(userId);
@@ -74,6 +73,11 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
         try{
             ResultsAnalysis resultsAnalysis = quizResultAnalysisRepository.findByUserId(userId);
             QuizSetAttemptResult quizSetAttemptResult =  quizAttemptResultService.getResultByUserIdAndQuizSetIdAndSetAttemptId(userId,quizSetId,quizSetAttemptId);
+            List<QuizSetAttemptResult> quizSetAttemptResultlist = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId).getQuizSetAttemptResults();
+                for (QuizSetAttemptResult attemptResult : quizSetAttemptResultlist) {
+                    if(quizSetAttemptResult.getCorrectAnswers()<attemptResult.getCorrectAnswers())
+                        quizSetAttemptResult = attemptResult;
+                }
             if(quizSetAttemptResult==null)
                 throw new OperationFailedException("User data not found in db.");
             if (resultsAnalysis!=null)
@@ -114,15 +118,17 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
     @Transactional
     public ResultsAnalysis calculatePerformance(QuizResults userResult){
-
         ResultsAnalysis resultsAnalysis = new ResultsAnalysis();
         resultsAnalysis.setUserId(userResult.getUserId());
         OverallPerformance overAllper = new OverallPerformance();
         List<QuizSetResult> quizSetResult = userResult.getQuizSetResults();
-
-        for(QuizSetResult qzSet: quizSetResult){
-            for (QuizSetAttemptResult attemptResult: qzSet.getQuizSetAttemptResults())
-                overAllper = calculateAttemptPerformance(overAllper,attemptResult);
+        for(QuizSetResult qzSet: quizSetResult) {
+            QuizSetAttemptResult bestAttemptResult = qzSet.getQuizSetAttemptResults().get(0);
+            for (QuizSetAttemptResult attemptResult : qzSet.getQuizSetAttemptResults()) {
+                if(bestAttemptResult.getCorrectAnswers()<attemptResult.getCorrectAnswers())
+                    bestAttemptResult = attemptResult;
+            }
+            overAllper = calculateAttemptPerformance(overAllper, bestAttemptResult);
         }
         resultsAnalysis.setOverallPerformance(overAllper);
         return resultsAnalysis;
