@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
+import java.time.ZoneId;
 
 
 @Service
@@ -85,14 +86,20 @@ public class EmailService {
             otpService.saveOtp(email, otp, 10);
             return "Otp email Sent successfully";
         }
-        else
-            return "Otp email already has been sent use that otp or Please try after " + otpService.findOtpByEmail(email)
+        else {
+            String istTime = otpService.findOtpByEmail(email)
                     .getExpirationTime()
-                    .format(DateTimeFormatter.ofPattern("hh:mm:ss a")) +" "
-                    + otpService.findOtpByEmail(email)
+                    .atZone(ZoneId.of("UTC")) // Treat LocalDateTime as UTC
+                    .withZoneSameInstant(ZoneId.of("Asia/Kolkata")) // Convert to IST
+                    .format(DateTimeFormatter.ofPattern("hh:mm:ss a")); // Format output
+
+            String date = otpService.findOtpByEmail(email)
                     .getExpirationTime()
                     .format(DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     );
+            return "Otp email already has been sent use that otp or Please try after " + istTime + " "
+                    + date;
+        }
     }
 
 
