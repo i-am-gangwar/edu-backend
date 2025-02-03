@@ -1,7 +1,6 @@
 package com.edubackend.service;
 
 import com.edubackend.Exceptions.Exception.OperationFailedException;
-import com.edubackend.Exceptions.Exception.ResourceNotFoundException;
 import com.edubackend.dto.QuestionDTO;
 import com.edubackend.model.quizattempts.QuizAttempts;
 import com.edubackend.model.quizattempts.QuizSet;
@@ -9,10 +8,12 @@ import com.edubackend.model.quizattempts.QuizSetAttempt;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
+import com.edubackend.mongo.MongoService;
 import com.edubackend.repository.QuizAttemptResultRepository;
 import com.edubackend.repository.QuizAttemptsRepository;
 import com.edubackend.service.interfaces.QuizAttemptResultService;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
@@ -28,17 +29,19 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
   private final QuestionService questionService;
   private final QuizAttemptsServiceImpl quizAttemptsService;
   private final QuizAttemptsRepository quizAttemptsRepository;
+  private final MongoService mongoService;
 
-    @Autowired
+  @Autowired
     public QuizAttemptResultServiceImpl(QuizAttemptResultRepository quizAttemptResultRepository,
                                         QuestionService questionService,
                                         QuizAttemptsServiceImpl quizAttemptsService,
-                                        QuizAttemptsRepository quizAttemptsRepository) {
+                                        QuizAttemptsRepository quizAttemptsRepository,
+                                        MongoService mongoService) {
         this.quizAttemptResultRepository = quizAttemptResultRepository;
         this.questionService = questionService;
         this.quizAttemptsService = quizAttemptsService;
         this.quizAttemptsRepository = quizAttemptsRepository;
-
+        this.mongoService = mongoService;
     }
 
     @Override
@@ -197,6 +200,8 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                         .filter(QuestionDTO.Option::isCorrect)
                         .map(QuestionDTO.Option::getId)
                         .toList();
+                Document document = mongoService.getDocumentById("subjects",question.getSubjectId());
+                String subjectName = document != null ? document.getString("name") : null;
                 // Check if the question was attempted
                 if (!selectedAnswers.isEmpty()) {
                     totalAttemptedQuestions++;
@@ -204,16 +209,16 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
                     if (selectedAnswers.size() == correctOptionIds.size() &&
                             new HashSet<>(selectedAnswers).containsAll(correctOptionIds)) {
                         correctAnswers++;
-                        subjectScoresForCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectScoresForCorrectAns.merge(subjectName, 1, Integer::sum);
                         subjectCategoryScoresForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     } else {
                         incorrectAnswers++;
-                        subjectScoresForInCorrectAns.merge(question.getSubjectId(), 1, Integer::sum);
+                        subjectScoresForInCorrectAns.merge(subjectName, 1, Integer::sum);
                         subjectCategoryScoresForInForCorrectAns.merge(question.getCategory(), 1, Integer::sum);
                     }
                 }
                 else{
-                    subjectScoresForNotAttemptedQ.merge(question.getSubjectId(), 1, Integer::sum);
+                    subjectScoresForNotAttemptedQ.merge(subjectName, 1, Integer::sum);
                     subjectCategoryScoresNotAttemptedQ.merge(question.getCategory(), 1, Integer::sum);
 
                 }
@@ -251,70 +256,48 @@ public class QuizAttemptResultServiceImpl implements QuizAttemptResultService {
 
 
     public QuizResults getResultByUserId(String userId){
-        QuizResults quizResults = quizAttemptResultRepository.findByUserId(userId);
-        return checkData(quizResults);
+        return quizAttemptResultRepository.findByUserId(userId);
 
     }
 
     public QuizSetResult getResultByUserIdAndQuizSetId(String userId, String quizSetId){
-        QuizSetResult quizSetResult = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
-        if(quizSetResult.getQuizSetAttemptResults().isEmpty())
-            throw  new ResourceNotFoundException(String.format(
-                    "User Quiz Attempt Not Saved. userId: %s, quizSetId: %s",
-                    userId, quizSetId));
-        quizSetResult = checkData(quizSetResult);
-        quizSetResult.setQuizSetId(quizSetId);
-        return quizSetResult;
+        return quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId,quizSetId);
     }
 
 
     public QuizSetAttemptResult getResultByUserIdAndQuizSetIdAndSetAttemptId(String userId, String quizSetId, String quizSetAttemptId) throws Exception {
-        try {
             QuizSetResult results = quizAttemptResultRepository.findQuizSetAttemptResultsByUserIdAndQuizSetId(userId, quizSetId);
             Optional<QuizSetAttemptResult> quizSetAttemptResult = results.getQuizSetAttemptResults().stream()
                     .filter(qs -> qs.getQuizSetAttemptId().equals(quizSetAttemptId)).findFirst();
-            System.out.println(quizSetAttemptResult);
-            if (quizSetAttemptResult.isPresent())
-                return checkData(quizSetAttemptResult.get());
-            else
-                throw new ResourceNotFoundException(String.format(
-                        "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
-                        userId, quizSetId, quizSetAttemptId));
-        }
-        catch (ResourceNotFoundException ex){
-            throw new ResourceNotFoundException(String.format(
-                    "User Quiz Attempt result Not found. userId: %s, quizSetId: %s, Attempt Details: %s",
-                    userId, quizSetId, quizSetAttemptId));
-
-        }
+        return quizSetAttemptResult.orElse(null);
 
     }
 
 
 
-    public <T> T checkData(T result){
-
-        try {
-            if (result==null) {
-                throw new OperationFailedException(
-                        "User data is not found in db");
-            }
-            return result;
-        }
-        catch (OperationFailedException e) {
-            log.warn("Operation failed: {}", e.getMessage(), e);
-            throw e;
-        }
-        catch (DataAccessResourceFailureException e) {
-            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
-            log.error(errorMessage, e);
-            throw new DataAccessResourceFailureException(errorMessage);
-        }
-        catch (ResourceNotFoundException ex){
-            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
-        }
-
-    }
+//    public <T> T checkData(T result){
+//
+//        try {
+//            if (result==null) {
+//                throw new OperationFailedException(
+//                        "User data is not found in db please enter valid details");
+//            }
+//            return result;
+//        }
+//        catch (OperationFailedException e) {
+//            log.warn("Operation failed: {}", e.getMessage(), e);
+//            throw e;
+//        }
+//        catch (DataAccessResourceFailureException e) {
+//            String errorMessage = "Collection not found or database unavailable. Please initialize the collection.";
+//            log.error(errorMessage, e);
+//            throw new DataAccessResourceFailureException(errorMessage);
+//        }
+//        catch (ResourceNotFoundException ex){
+//            throw new ResourceNotFoundException("An error occurred while retrieving user results. Please try again.");
+//        }
+//
+//    }
 
 
 }

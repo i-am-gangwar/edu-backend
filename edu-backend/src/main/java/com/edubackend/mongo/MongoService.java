@@ -8,6 +8,7 @@ import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.bson.Document;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,9 @@ public class MongoService implements MongoQueryUtil{
         this.mongoTemplate = mongoTemplate;
     }
 
+    public Document getDocumentById(String collectionName, String id) {
+        return mongoTemplate.findById(id, Document.class, collectionName);
+    }
     @Override
     public Query createQuery(String userId, String quizSetId) {
         Criteria criteria = new Criteria();   // Build the query using $elemMatch to ensure both conditions in the array match

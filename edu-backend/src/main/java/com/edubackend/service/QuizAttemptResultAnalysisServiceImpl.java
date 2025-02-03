@@ -1,8 +1,10 @@
 package com.edubackend.service;
 
 import com.edubackend.Exceptions.Exception.OperationFailedException;
+import com.edubackend.model.quizananlysis.MarksMatrics;
 import com.edubackend.model.quizananlysis.OverallPerformance;
 import com.edubackend.model.quizananlysis.ResultsAnalysis;
+import com.edubackend.model.quizananlysis.SubjectMatrics;
 import com.edubackend.model.quizresults.QuizResults;
 import com.edubackend.model.quizresults.QuizSetAttemptResult;
 import com.edubackend.model.quizresults.QuizSetResult;
@@ -99,7 +101,6 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
         }
         catch (Exception e) {
-            // Handle unexpected exceptions and log them for troubleshooting
             String errorMessage = "An unexpected error occurred while creating quiz attempt.";
             log.error(errorMessage, e);
             throw new RuntimeException(errorMessage, e);
@@ -130,51 +131,8 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
     @Transactional
     public OverallPerformance calculateAttemptPerformance(OverallPerformance overAllper, QuizSetAttemptResult attemptResult) {
-        // add quizSet attempted
-        overAllper.getMarksMatrics().getTotalQuizSets().add(1);
-        // total q attempted + not attempted
-        overAllper.getMarksMatrics().getTotalQ().add(attemptResult.getTotalAttemptedQuestions()+attemptResult.getTotalNotAttemptedQuestions());
-        // total attempted q
-        overAllper.getMarksMatrics().getTotalAttemptedQ().add(attemptResult.getTotalAttemptedQuestions());
-        // total correct q attempted
-        overAllper.getMarksMatrics().getTotalCorrectScore().add(attemptResult.getCorrectAnswers());
-        // total incorrect q attempted
-        overAllper.getMarksMatrics().getTotalIncorrectScore().add(attemptResult.getInCorrectAnswers());
-        // set highest
-        overAllper.getMarksMatrics().setHighestScore(Math.max(overAllper.getMarksMatrics().getHighestScore(), attemptResult.getTotalAttemptedQuestions()));
-        // set lowest
-        overAllper.getMarksMatrics().setLowestScore(Math.min(overAllper.getMarksMatrics().getLowestScore(), attemptResult.getTotalAttemptedQuestions()));
-        // average so far for correct out of total q in quiz
-        overAllper.getMarksMatrics().setAverageScore(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100
-                /overAllper.getMarksMatrics().getTotalQ().getTotal()));
-        // accuracy of total correct q out of total attempted
-        overAllper.getMarksMatrics().setOverallAccuracy(Math.round((float) (overAllper.getMarksMatrics().getTotalCorrectScore().getTotal())*100
-                / overAllper.getMarksMatrics().getTotalAttemptedQ().getTotal()));
-        // subject score for correct q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForCorrectAnswer().entrySet())
-            overAllper.getSubjectMatrics().getSubjectScoresForCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
-
-
-        // subject category score for correct q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresForCorrectAnswer().entrySet()){
-            overAllper.getSubjectMatrics().getSubjectCategoryScoresForCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
-        }
-        // subject score for incorrect q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForInCorrectAnswer().entrySet()){
-            overAllper.getSubjectMatrics().getSubjectScoresForInCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
-        }
-        // subject category score for incorrect q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresForInCorrectAnswer().entrySet()){
-            overAllper.getSubjectMatrics().getSubjectCategoryScoresForInCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
-        }
-        // subject score for not attempted q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForNotAttemptedQ().entrySet()){
-            overAllper.getSubjectMatrics().getSubjectScoresForNotAttemptedQ().merge(mp.getKey(), mp.getValue(), Integer::sum);
-        }
-        // subject category score for not attempted q
-        for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresNotAttemptedQ().entrySet()){
-            overAllper.getSubjectMatrics().getSubjectCategoryScoresNotAttemptedQ().merge(mp.getKey(), mp.getValue(), Integer::sum);
-        }
+        overAllper.setMarksMatrics(calculateMarksMatrics(overAllper.getMarksMatrics(),attemptResult));
+        overAllper.setSubjectMatrics(calculateSubjectMatrics(overAllper.getSubjectMatrics(),attemptResult));
         overAllper.setAnalyzedAt(new Date());
         return  overAllper;
 
@@ -182,6 +140,70 @@ public class QuizAttemptResultAnalysisServiceImpl implements QuizAttemptResultAn
 
 
 
+
+  public MarksMatrics calculateMarksMatrics(MarksMatrics marksMatrics, QuizSetAttemptResult attemptResult){
+          // average time spent per quiz till now
+          double totalTime = marksMatrics.getAverageTimePerQuiz()*(marksMatrics.getTotalQuizSets().getTotal());
+          // add quizSet attempted
+          marksMatrics.getTotalQuizSets().add(1);
+          // total q attempted + not attempted
+          marksMatrics.getTotalQ().add(attemptResult.getTotalAttemptedQuestions()+attemptResult.getTotalNotAttemptedQuestions());
+          // total attempted q
+          marksMatrics.getTotalAttemptedQ().add(attemptResult.getTotalAttemptedQuestions());
+          // total correct q attempted
+          marksMatrics.getTotalCorrectScore().add(attemptResult.getCorrectAnswers());
+          // total incorrect q attempted
+          marksMatrics.getTotalIncorrectScore().add(attemptResult.getInCorrectAnswers());
+          // set highest score of quiz
+          marksMatrics.setHighestScore(Math.max(marksMatrics.getHighestScore(), attemptResult.getCorrectAnswers()));
+          // set lowest score of quiz attempt
+          marksMatrics.setLowestScore(Math.min(marksMatrics.getLowestScore(), attemptResult.getCorrectAnswers()));
+          // average so far for correct out of total attempted questions in quizes
+          marksMatrics.setAverageScore(Math.round((float) (marksMatrics.getTotalCorrectScore().getTotal())*100
+                  /marksMatrics.getTotalQ().getTotal()));
+          // accuracy of total correct q out of total attempted
+          marksMatrics.setOverallAccuracy(Math.round((float) (marksMatrics.getTotalCorrectScore().getTotal())*100
+                  / marksMatrics.getTotalAttemptedQ().getTotal()));
+
+          totalTime = totalTime + Double.parseDouble( attemptResult.getTimeSpent());
+          marksMatrics.setAverageTimePerQuiz(totalTime/marksMatrics.getTotalQuizSets().getTotal());
+          System.out.println("av.:"+ marksMatrics.getAverageTimePerQuiz());
+
+   return  marksMatrics;
+  }
+
+
+  public SubjectMatrics calculateSubjectMatrics(SubjectMatrics subjectMatrics,QuizSetAttemptResult attemptResult){
+
+      // subject score for correct q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForCorrectAnswer().entrySet())
+          subjectMatrics.getSubjectScoresForCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
+
+
+      // subject category score for correct q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresForCorrectAnswer().entrySet()){
+          subjectMatrics.getSubjectCategoryScoresForCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
+      }
+      // subject score for incorrect q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForInCorrectAnswer().entrySet()){
+          subjectMatrics.getSubjectScoresForInCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
+      }
+      // subject category score for incorrect q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresForInCorrectAnswer().entrySet()){
+          subjectMatrics.getSubjectCategoryScoresForInCorrectAnswer().merge(mp.getKey(), mp.getValue(), Integer::sum);
+      }
+      // subject score for not attempted q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectScoresForNotAttemptedQ().entrySet()){
+          subjectMatrics.getSubjectScoresForNotAttemptedQ().merge(mp.getKey(), mp.getValue(), Integer::sum);
+      }
+      // subject category score for not attempted q
+      for(Map.Entry<String, Integer> mp : attemptResult.getSubjectCategoryScoresNotAttemptedQ().entrySet()){
+          subjectMatrics.getSubjectCategoryScoresNotAttemptedQ().merge(mp.getKey(), mp.getValue(), Integer::sum);
+      }
+
+    return subjectMatrics;
+
+  }
 
 
 

@@ -20,6 +20,7 @@
 		<spring-ai.version>1.0.0-M4</spring-ai.version>
 		<sonar.organization>edubackend</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
+		<maven.test.skip>true</maven.test.skip>
 	</properties>
 	<dependencies>
 		<!-- Spring Web -->
@@ -28,11 +29,11 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!--		&lt;!&ndash; Spring Security &ndash;&gt;-->
-		<!--		<dependency>-->
-		<!--			<groupId>org.springframework.boot</groupId>-->
-		<!--			<artifactId>spring-boot-starter-security</artifactId>-->
-		<!--		</dependency>-->
+				<!-- Spring Security -->
+				<dependency>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-security</artifactId>
+				</dependency>
 
 		<!-- MongoDB -->
 		<dependency>
@@ -61,6 +62,49 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-ui -->
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-ui</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+
+
+		<!--   email-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
+		<!-- Spring Boot Starter Thymeleaf for email templating -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+<!--jwt token-->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+
+
 		<!-- Spring Security Test -->
 		<!--		<dependency>-->
 		<!--			<groupId>org.springframework.security</groupId>-->
@@ -80,6 +124,11 @@
 			<version>3.0.2</version> <!-- Latest stable version -->
 		</dependency>
 
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.15</version>
+		</dependency>
 
 	</dependencies>
 

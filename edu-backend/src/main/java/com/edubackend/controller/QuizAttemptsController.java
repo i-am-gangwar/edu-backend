@@ -8,11 +8,11 @@ import com.edubackend.utils.ApiResponse;
 import com.edubackend.utils.ResponseUtil;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessResourceFailureException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/quizAttempt")
@@ -28,43 +28,44 @@ public class QuizAttemptsController {
     }
 
 
-    @PostMapping("/{userId}/quizset/{quizSetId}/attempts")  // save user quiz attempt on submit
-    public ResponseEntity<ApiResponse<QuizSetAttempt>> addQuizAttempt(
+    @PostMapping("/{userId}/quizset/{quizSetId}/attempts")
+    public ResponseEntity<ApiResponse<QuizSetAttempt>> saveQuizAttempt(
             @PathVariable String userId,
             @PathVariable String quizSetId,
             @Valid @RequestBody QuizSetAttempt newAttempt) throws Exception {
-          QuizSetAttempt savedSetAttempt =  quizAttemptService.createAttempt(userId,quizSetId,newAttempt);
-       return ResponseUtil.success("quiz Attempt saved successfully",savedSetAttempt);
 
+        QuizSetAttempt savedSetAttempt =  quizAttemptService.saveQuizAttempt(userId,quizSetId,newAttempt);
+        return ResponseUtil.success("quiz Attempt saved successfully",savedSetAttempt);
     }
 
 
-    @GetMapping("/userId/{userId}")  // get all quiz attempt of user by user id
-    public ResponseEntity<ApiResponse<QuizAttempts>> getAllResultUser(@PathVariable String userId) {
+    @GetMapping("/userId/{userId}")
+    public ResponseEntity<ApiResponse<Object>> getAllResultUser(
+            @PathVariable String userId) {
         QuizAttempts quizAttempts = quizAttemptService.getResultByUserId(userId);
-        return ResponseUtil.success("data fetched successfully",quizAttempts);
+        return ResponseUtil.success("data fetched successfully",
+                Objects.requireNonNullElseGet(quizAttempts, ArrayList::new));
     }
 
 
         // get all attempt of any quizSet by quizSetId and UserID
     @GetMapping("/userId/{userId}/quizSetId/{quizSetId}")
-    public ResponseEntity<ApiResponse<QuizSet>> getResultsByUserIdAndQuizSetId(
+    public ResponseEntity<ApiResponse<Object>> getResultsByUserIdAndQuizSetId(
             @PathVariable String userId,
             @PathVariable String quizSetId) {
-
         QuizSet quizSet = quizAttemptService.getResultByUserIdAndSetId(userId,quizSetId);
-        return ResponseUtil.success("data fetched successfully",quizSet);
+        return ResponseUtil.success("data fetched successfully",
+                Objects.requireNonNullElseGet(quizSet, ArrayList::new));
     }
 
     @GetMapping("/userId/{userId}/quizSetId/{quizSetId}/{setAttemptId}")
-    public ResponseEntity<ApiResponse<QuizSetAttempt>> getResultBySetAttemptId(
+    public ResponseEntity<ApiResponse<Object>> getResultBySetAttemptId(
             @PathVariable String userId,
             @PathVariable String quizSetId,
-            @PathVariable String setAttemptId)
-    {
+            @PathVariable String setAttemptId) {
         QuizSetAttempt setAttempt = quizAttemptService.getResultByUserIdAndSetIdAndSetAttemptId(userId,quizSetId,setAttemptId);
-        return ResponseUtil.success("data fetched successfully",setAttempt);
-
+        return ResponseUtil.success("data fetched successfully",
+                Objects.requireNonNullElseGet(setAttempt, ArrayList::new));
     }
 
 
