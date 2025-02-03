@@ -1,4 +1,4 @@
-package com.edubackend.model;
+package com.edubackend.model.leaderboard;
 
 
 import lombok.AllArgsConstructor;
@@ -20,6 +20,6 @@ public class Leaderboard {
     @Id
     @NonNull
     String id;
-    private Map<String,Integer> score = new HashMap<>();
+    private Map<String,Pair<String, Integer>> score = new HashMap<>();
 }
 

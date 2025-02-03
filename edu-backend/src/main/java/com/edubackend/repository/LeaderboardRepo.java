@@ -1,6 +1,6 @@
 package com.edubackend.repository;
 
-import com.edubackend.model.Leaderboard;
+import com.edubackend.model.leaderboard.Leaderboard;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 @Repository

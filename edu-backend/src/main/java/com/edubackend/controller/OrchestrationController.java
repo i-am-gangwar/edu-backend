@@ -37,7 +37,7 @@ public class OrchestrationController {
         // saved the quiz analysis
         ResponseEntity<ApiResponse<ResultsAnalysis>> savedAnalysis = quizAttemptResultAnalysisController.saveResultAnalysis(userId);
         System.out.println("Quiz set attempt result analysis calculated and data saved successfully");
-        ResponseEntity<String> updatedLeaderboard = leaderboardController.calculateLeaderboard();
+        ResponseEntity<String> updatedLeaderboard = leaderboardController.updateLeaderboard(userId);
         System.out.println("Leaderboard calculated and data saved successfully");
 
 
