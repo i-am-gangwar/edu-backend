@@ -51,6 +51,9 @@ public class LeaderboardServiceImpl {
         Leaderboard leaderboard = new Leaderboard();
         for (ResultsAnalysis analysis : resultsAnalyses) {
          String userName = userService.getUserById(analysis.getUserId());
+         userName = userName.replace(".","");
+         userName = userName.replace("$","");
+         userName = userName.replace("/","");
             leaderboard.getScore().put(
                     userName,
                     analysis.getOverallPerformance().getMarksMatrics().getTotalCorrectScore().getTotal());

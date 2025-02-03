@@ -75,6 +75,14 @@ public class OtpService {
         return otpRepository.findByEmail(email);
     }
 
-
+    public Boolean isAllowedToSendNewOtp(String email){
+         Otp otp = findOtpByEmail(email);
+         if(otp==null)
+             return true;
+        else if(otp.getExpirationTime().isAfter(LocalDateTime.now()))
+             return false;
+         else
+             return true;
+    }
 
 }
