@@ -23,12 +23,8 @@ public class QuizAttemptResultAnalysisController {
 
     @PostMapping("/{userId}")
     public ResponseEntity<ApiResponse<ResultsAnalysis>> saveResultAnalysis(@PathVariable String userId) {
-       List<ResultsAnalysis>  resultsAnalyses = quizResultAnalysisRepository.findAll();
-       for(ResultsAnalysis rs: resultsAnalyses) {
-           ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(rs.getUserId());
-       }
-       // return ResponseUtil.success("Result analysis created", createdAnalysis);
-        return ResponseUtil.success("Result analysis created",resultsAnalyses.get(0));
+       ResultsAnalysis createdAnalysis = quizAttemptResultAnalysisServiceImpl.createAnalysisByUserId(userId);
+       return ResponseUtil.success("Result analysis created", createdAnalysis);
     }
 
 
